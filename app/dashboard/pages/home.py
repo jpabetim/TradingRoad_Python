@@ -6,6 +6,40 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
+def create_example_chart():
+    """Crear un gráfico de ejemplo para mostrar en la página de inicio"""
+    # Crear datos de ejemplo para un gráfico de velas
+    dates = pd.date_range(start='2023-01-01', periods=30, freq='D')
+    
+    # Generar precios simulados
+    np.random.seed(42)
+    close = 100 + np.cumsum(np.random.randn(30) * 2)
+    open = close - np.random.randn(30) * 1.5
+    high = np.maximum(close, open) + np.random.rand(30) * 3
+    low = np.minimum(close, open) - np.random.rand(30) * 3
+    
+    # Crear figura con Plotly
+    fig = go.Figure(data=[go.Candlestick(
+        x=dates,
+        open=open, 
+        high=high,
+        low=low, 
+        close=close,
+        name='BTC/USD'
+    )])
+    
+    # Actualizar layout
+    fig.update_layout(
+        title='Bitcoin/USD - Últimos 30 días (Datos de ejemplo)',
+        xaxis_title='Fecha',
+        yaxis_title='Precio (USD)',
+        template='plotly_dark',
+        height=500,
+        margin=dict(l=50, r=50, t=70, b=50),
+    )
+    
+    return fig
+
 # Layout principal de la página de inicio
 layout = html.Div([
     dbc.Row([
@@ -58,40 +92,6 @@ layout = html.Div([
         ], width=12, className="mb-4"),
     ]),
 ])
-
-def create_example_chart():
-    """Crear un gráfico de ejemplo para mostrar en la página de inicio"""
-    # Crear datos de ejemplo para un gráfico de velas
-    dates = pd.date_range(start='2023-01-01', periods=30, freq='D')
-    
-    # Generar precios simulados
-    np.random.seed(42)
-    close = 100 + np.cumsum(np.random.randn(30) * 2)
-    open = close - np.random.randn(30) * 1.5
-    high = np.maximum(close, open) + np.random.rand(30) * 3
-    low = np.minimum(close, open) - np.random.rand(30) * 3
-    
-    # Crear figura con Plotly
-    fig = go.Figure(data=[go.Candlestick(
-        x=dates,
-        open=open, 
-        high=high,
-        low=low, 
-        close=close,
-        name='BTC/USD'
-    )])
-    
-    # Actualizar layout
-    fig.update_layout(
-        title='Bitcoin/USD - Últimos 30 días (Datos de ejemplo)',
-        xaxis_title='Fecha',
-        yaxis_title='Precio (USD)',
-        template='plotly_dark',
-        height=500,
-        margin=dict(l=50, r=50, t=70, b=50),
-    )
-    
-    return fig
 
 def register_callbacks(app):
     """Registrar los callbacks para la página de inicio"""
