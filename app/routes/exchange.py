@@ -150,7 +150,7 @@ def delete_exchange(
     db: Session = Depends(deps.get_db),
     exchange_id: int,
     current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
+) -> None:
     """
     Eliminar exchange
     """

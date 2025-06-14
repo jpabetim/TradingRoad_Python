@@ -177,7 +177,7 @@ def delete_strategy(
     db: Session = Depends(deps.get_db),
     strategy_id: int,
     current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
+) -> None:
     """
     Eliminar estrategia
     """
