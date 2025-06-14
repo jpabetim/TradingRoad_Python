@@ -6,6 +6,21 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
+def create_empty_chart():
+    """Crear un gráfico vacío para mostrar inicialmente"""
+    fig = go.Figure()
+    
+    fig.update_layout(
+        title="Seleccione un par y haga clic en 'Cargar datos'",
+        xaxis_title="Fecha/Hora",
+        yaxis_title="Precio",
+        template="plotly_dark",
+        height=600,
+        showlegend=True
+    )
+    
+    return fig
+
 # Layout principal de la página de trading
 layout = html.Div([
     dbc.Row([
@@ -237,21 +252,6 @@ layout = html.Div([
         ], width=12, lg=6, className="mb-4")
     ])
 ])
-
-def create_empty_chart():
-    """Crear un gráfico vacío para mostrar inicialmente"""
-    fig = go.Figure()
-    
-    fig.update_layout(
-        title="Seleccione un par y haga clic en 'Cargar datos'",
-        xaxis_title="Fecha/Hora",
-        yaxis_title="Precio",
-        template="plotly_dark",
-        height=600,
-        showlegend=True
-    )
-    
-    return fig
 
 def register_callbacks(app):
     """Registrar los callbacks para la página de trading"""
