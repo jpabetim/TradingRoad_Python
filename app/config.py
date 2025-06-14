@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Dict, Any, ClassVar
 
 # Cargar variables de entorno desde .env
 load_dotenv()
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "AIzaSyCaijxBkHVI05Y2uYz6iU5tgxxz8oUlUok")
     
     # Niveles de usuario
-    USER_LEVELS = {
+    USER_LEVELS: ClassVar[Dict[str, Dict[str, Any]]] = {
         "basic": {
             "name": "Básico",
             "max_exchanges": 1,
