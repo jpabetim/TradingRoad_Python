@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
-from typing import List, Dict, Any, ClassVar
+from typing import Tuple, Dict, Any, ClassVar
 
 # Cargar variables de entorno desde .env
 load_dotenv()
@@ -17,11 +17,11 @@ class Settings(BaseSettings):
     
     # Configuración CORS
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:8000")
-    CORS_ORIGINS: List[str] = [
+    CORS_ORIGINS: Tuple[str, ...] = (
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "https://tradingroad.onrender.com",
-    ]
+    )
     
     # Configuración de base de datos
     DATABASE_URL: str = os.getenv(
