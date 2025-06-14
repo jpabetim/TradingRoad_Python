@@ -23,3 +23,5 @@ ccxt>=4.1.19
 google-generativeai>=0.3.1
 python-binance>=1.0.19
 email-validator>=2.1.0
+gunicorn>=21.2.0
+gunicorn>=21.2.0
