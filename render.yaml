@@ -1,0 +1,36 @@
+services:
+  # A Docker web service
+  - type: web
+    name: tradingroad-python
+    env: python
+    region: frankfurt  # Región de Render cercana a España
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app.main:app -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT -w 4
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false  # Se configurará manualmente en el dashboard de Render o con una base de datos provisionada
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MAX_WORKERS
+        value: 4
+      - fromGroup: tradingroad-settings
+
+envVarGroups:
+  - name: tradingroad-settings
+    envVars:
+      - key: CORS_ORIGINS
+        value: '["https://tradingroad.onrender.com"]'
+      - key: API_V1_STR
+        value: /api/v1
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 60
+      - key: ALGORITHM
+        value: HS256
+      - key: LOG_LEVEL
+        value: INFO
