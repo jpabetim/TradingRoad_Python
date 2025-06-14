@@ -7,6 +7,20 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
+def create_empty_chart(analysis_type):
+    """Crear un gráfico vacío para mostrar inicialmente"""
+    fig = go.Figure()
+    
+    fig.update_layout(
+        title=f"Seleccione un activo y periodo para ver el análisis {analysis_type}",
+        xaxis_title="Fecha",
+        yaxis_title="Valor",
+        template="plotly_dark",
+        height=400
+    )
+    
+    return fig
+
 # Layout principal de la página de análisis
 layout = html.Div([
     dbc.Row([
@@ -163,20 +177,6 @@ layout = html.Div([
         ], width=12, className="mb-4")
     ])
 ])
-
-def create_empty_chart(analysis_type):
-    """Crear un gráfico vacío para mostrar inicialmente"""
-    fig = go.Figure()
-    
-    fig.update_layout(
-        title=f"Seleccione un activo y periodo para ver el análisis {analysis_type}",
-        xaxis_title="Fecha",
-        yaxis_title="Valor",
-        template="plotly_dark",
-        height=400
-    )
-    
-    return fig
 
 def create_correlation_heatmap():
     """Crear un heatmap de correlación entre varios activos"""
