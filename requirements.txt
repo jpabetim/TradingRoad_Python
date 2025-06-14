@@ -30,3 +30,4 @@ email-validator==2.1.0
 gunicorn==21.2.0
 grpcio==1.59.0
 psycopg2-binary==2.9.7
+# Forzar nuevo despliegue 14/06/2025
