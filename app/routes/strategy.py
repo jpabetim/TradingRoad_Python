@@ -202,7 +202,7 @@ def delete_strategy(
     db.delete(strategy)
     db.commit()
     
-    return None
+    # Cuando se usa status_code=204, no se debe devolver nada
 
 @router.post("/{strategy_id}/trades", response_model=schemas.Trade)
 def create_trade(

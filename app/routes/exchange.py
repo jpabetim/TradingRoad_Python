@@ -173,4 +173,4 @@ def delete_exchange(
     db.delete(exchange)
     db.commit()
     
-    return None
+    # Cuando se usa status_code=204, no se debe devolver nada
