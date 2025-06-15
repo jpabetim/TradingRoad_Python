@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 import os
 import sys
 import logging
+import re
 
 from app.config import settings
 
@@ -31,6 +32,13 @@ try:
     elif database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
         logger.info("Se corrigió formato postgres:// a postgresql://")
+    
+    # Validar que la URL de PostgreSQL tenga formato correcto
+    if database_url.startswith("postgresql://"):
+        # Verificar si la URL tiene el patrón correcto
+        if not re.match(r'postgresql://[^:]+:[^@]+@[^/:]+:\d+/[^/]+', database_url):
+            logger.error(f"La URL de PostgreSQL parece estar mal formada. Usando SQLite como fallback.")
+            database_url = "sqlite:///./tradingroad.db"
 
     # Crear motor de base de datos
     engine = create_engine(
