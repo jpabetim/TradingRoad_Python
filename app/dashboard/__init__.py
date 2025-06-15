@@ -3,21 +3,20 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 from .pages import home, trading, analysis, settings
 
-def create_dash_app(server, routes_pathname_prefix):
+def create_dash_app(routes_pathname_prefix):
     """
-    Crea una aplicación Dash integrada con FastAPI
+    Crea una aplicación Dash independiente para ser montada en FastAPI
     
     Args:
-        server: La instancia de FastAPI
         routes_pathname_prefix: El prefijo para todas las rutas Dash
         
     Returns:
         La aplicación Dash configurada
     """
+    # Crear una aplicación Dash independiente (sin servidor Flask)
     app = dash.Dash(
         __name__,
-        server=server,
-        routes_pathname_prefix=routes_pathname_prefix,
+        requests_pathname_prefix=routes_pathname_prefix,
         external_stylesheets=[dbc.themes.DARKLY],
         suppress_callback_exceptions=True,
     )
