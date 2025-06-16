@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Security, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Any, List
@@ -22,28 +22,31 @@ async def login_form_page(request: Request):
 async def register_form_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request, "title": "Registro"})
 
-@router.post("/login", response_model=schemas.Token)
+@router.post("/login")
 async def login_access_token(
+    request: Request,
     db: Session = Depends(deps.get_db), 
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """
-    Obtener token JWT para acceso
+    Login con usuario y contraseña
     """
     # Buscar usuario por email
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
     
     # Verificar que el usuario existe y la contraseña es correcta
     if not user or not security.verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Correo o contraseña incorrectos",
-            headers={"WWW-Authenticate": "Bearer"},
+        return templates.TemplateResponse(
+            "login.html", 
+            {"request": request, "title": "Iniciar Sesión", "error": "Correo o contraseña incorrectos"}
         )
     
     # Verificar que el usuario está activo
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="Usuario inactivo")
+        return templates.TemplateResponse(
+            "login.html", 
+            {"request": request, "title": "Iniciar Sesión", "error": "Usuario inactivo"}
+        )
     
     # Determinar los scopes según el nivel de usuario
     scopes = ["user"]
@@ -56,12 +59,19 @@ async def login_access_token(
     # Incluir scopes en el token
     token_data = {"sub": user.email, "scopes": scopes}
     
-    return {
-        "access_token": security.create_access_token(
-            token_data, expires_delta=access_token_expires
-        ),
-        "token_type": "bearer",
-    }
+    # Generar el token JWT
+    access_token = security.create_access_token(
+        token_data, expires_delta=access_token_expires
+    )
+    
+    # Guardar el token en la sesión
+    request.session["access_token"] = access_token
+    request.session["token_type"] = "bearer"
+    request.session["user_email"] = user.email
+    
+    # Redireccionar a la página principal
+    response = RedirectResponse(url="/", status_code=303)
+    return response
 
 @router.post("/register", response_model=schemas.User)
 async def register_user(
