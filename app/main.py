@@ -161,10 +161,13 @@ async def auth_middleware(request: Request, call_next):
     response = await call_next(request)
     return response
 
+# Importar WSGIMiddleware para adaptar aplicaciones WSGI (Dash/Flask) en ASGI (FastAPI)
+from starlette.middleware.wsgi import WSGIMiddleware
+
 # Crear e integrar la aplicación Dash con ruta consistente
 dash_app = create_dash_app("/dashboard/")  # Con slash final
-# Montar la aplicación Dash en FastAPI
-app.mount("/dashboard", dash_app.server)  # Sin slash final
+# Montar la aplicación Dash en FastAPI usando WSGIMiddleware para adaptar WSGI a ASGI
+app.mount("/dashboard", WSGIMiddleware(dash_app.server))  # Envolver el servidor Flask/Dash
 
 @app.on_event("startup")
 async def startup_event():
