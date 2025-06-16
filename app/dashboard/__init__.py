@@ -19,6 +19,12 @@ def create_dash_app(routes_pathname_prefix):
         requests_pathname_prefix=routes_pathname_prefix,
         external_stylesheets=[dbc.themes.DARKLY],
         suppress_callback_exceptions=True,
+        # Importante: Permitir a Dash acceder a las cookies de FastAPI
+        update_title=None,
+        serve_locally=True,
+        meta_tags=[
+            {"name": "viewport", "content": "width=device-width, initial-scale=1"}
+        ]
     )
     
     # Configurar el layout principal de la aplicación Dash
@@ -53,13 +59,13 @@ def create_dash_app(routes_pathname_prefix):
     )
     def display_page(pathname):
         """Dirige al usuario a la página correspondiente basada en la URL"""
-        if pathname == routes_pathname_prefix:
+        if pathname == routes_pathname_prefix or pathname == routes_pathname_prefix[:-1]:
             return home.layout
-        elif pathname == routes_pathname_prefix + 'trading':
+        elif pathname == routes_pathname_prefix + 'trading' or pathname == routes_pathname_prefix + 'trading/':
             return trading.layout
-        elif pathname == routes_pathname_prefix + 'analysis':
+        elif pathname == routes_pathname_prefix + 'analysis' or pathname == routes_pathname_prefix + 'analysis/':
             return analysis.layout
-        elif pathname == routes_pathname_prefix + 'settings':
+        elif pathname == routes_pathname_prefix + 'settings' or pathname == routes_pathname_prefix + 'settings/':
             return settings.layout
         else:
             # Si la URL no es válida, mostrar página 404

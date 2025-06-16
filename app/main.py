@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Request, Depends, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -13,16 +13,16 @@ from app.config import settings
 from app.db.session import engine, SessionLocal
 from app.db.init_db import init_db
 from app.routes.api import api_router
-from app.dashboard import create_dash_app
+from app.dashboard import create_dash_app, AuthMiddleware
 from app.core.templates import templates
 
 # Inicializar FastAPI
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="Plataforma de trading con análisis en tiempo real",
-    version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    description=settings.PROJECT_DESCRIPTION,
+    version=settings.VERSION,
+    docs_url=f"{settings.API_V1_STR}/docs",
+    redoc_url=f"{settings.API_V1_STR}/redoc",
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
@@ -70,10 +70,27 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "title": settings.PROJECT_NAME})
 
-# Crear e integrar la aplicación Dash
-dash_app = create_dash_app("/dashboard")  # Sin slash final
+# Middleware para proteger rutas del dashboard
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    if request.url.path.startswith("/dashboard"):
+        # Verificar si hay una sesión
+        session = request.cookies.get("session")
+        if not session:
+            # Redirigir al login si no hay sesión
+            return RedirectResponse(url="/api/v1/auth/login_form")
+    
+    # Continuar con la solicitud normalmente
+    response = await call_next(request)
+    return response
+
+# Crear e integrar la aplicación Dash con ruta consistente
+dash_app = create_dash_app("/dashboard/")  # Con slash final
 # Montar la aplicación Dash en FastAPI
-app.mount("/dashboard", dash_app.server)
+app.mount("/dashboard", dash_app.server)  # Sin slash final
+
+# Añadir el middleware de autenticación
+app.add_middleware(AuthMiddleware)
 
 @app.on_event("startup")
 async def startup_event():
