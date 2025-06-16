@@ -74,7 +74,7 @@ async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "title": settings.PROJECT_NAME})
 
 # Crear e integrar la aplicación Dash
-dash_app = create_dash_app("/dashboard/")
+dash_app = create_dash_app("/dashboard")  # Sin slash final
 # Montar la aplicación Dash en FastAPI
 app.mount("/dashboard", dash_app.server)
 

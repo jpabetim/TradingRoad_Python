@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body, Security
+from fastapi import APIRouter, Depends, HTTPException, status, Body, Security, Request
+from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Any, List
@@ -6,9 +7,20 @@ from typing import Any, List
 from app import models, schemas
 from app.core import security, deps
 from app.config import settings
+from app.main import templates
 from datetime import timedelta
 
 router = APIRouter()
+
+# Ruta para servir la página de login
+@router.get("/login_form", response_class=HTMLResponse)
+async def login_form_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request, "title": "Iniciar Sesión"})
+
+# Ruta para servir la página de registro
+@router.get("/register", response_class=HTMLResponse)
+async def register_form_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request, "title": "Registro"})
 
 @router.post("/login", response_model=schemas.Token)
 async def login_access_token(
