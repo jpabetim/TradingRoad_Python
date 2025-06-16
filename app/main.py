@@ -28,6 +28,9 @@ app = FastAPI(
 )
 
 # Middleware para sesiones
+import logging
+logger_main = logging.getLogger(__name__)
+logger_main.warning(f"MAIN.PY: Configurando SessionMiddleware con SECRET_KEY: '{settings.SECRET_KEY}' (Tipo: {type(settings.SECRET_KEY)})")
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.SECRET_KEY
