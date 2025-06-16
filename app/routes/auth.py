@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from typing import Any, List
 
 from app import models, schemas
-from app.core import security, deps, templates
+from app.core import security, deps
+from app.core.templates import templates
 from app.config import settings
 from datetime import timedelta
 
