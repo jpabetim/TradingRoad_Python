@@ -9,6 +9,7 @@ load_dotenv()
 class Settings(BaseSettings):
     # Configuración general
     PROJECT_NAME: str = "TradingRoad"
+    PROJECT_DESCRIPTION: str = "Plataforma de trading con análisis en tiempo real"
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = os.getenv("SECRET_KEY", "clave_secreta_por_defecto_cambiarme")
     ALGORITHM: str = "HS256"
