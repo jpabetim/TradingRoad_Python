@@ -40,20 +40,20 @@ app.add_middleware(
 if settings.ENVIRONMENT == "production":
     app.add_middleware(HTTPSRedirectMiddleware)
 
-# Middleware para compresión
-app.add_middleware(GZipMiddleware, minimum_size=1000)
+# Middleware para compresión (TEMPORALMENTE COMENTADO PARA DEBUG)
+# app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# Middleware para CORS
-origins = settings.CORS_ORIGINS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["Content-Type", "Authorization"],
-    max_age=600,  # Tiempo de caché para preflight (10 minutos)
-)
+# Middleware para CORS (TEMPORALMENTE COMENTADO PARA DEBUG)
+# origins = settings.CORS_ORIGINS
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+#     expose_headers=["Content-Type", "Authorization"],
+#     max_age=600,  # Tiempo de caché para preflight (10 minutos)
+# )
 
 # Montar archivos estáticos
 app.mount("/static", StaticFiles(directory="static"), name="static")
