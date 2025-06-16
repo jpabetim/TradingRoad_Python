@@ -14,7 +14,7 @@ from app.config import settings
 from app.db.session import engine, SessionLocal
 from app.db.init_db import init_db
 from app.routes.api import api_router
-from app.dashboard import create_dash_app, AuthMiddleware
+from app.dashboard import create_dash_app
 from app.core.templates import templates
 
 # Inicializar FastAPI
@@ -89,9 +89,6 @@ async def auth_middleware(request: Request, call_next):
 dash_app = create_dash_app("/dashboard/")  # Con slash final
 # Montar la aplicación Dash en FastAPI
 app.mount("/dashboard", dash_app.server)  # Sin slash final
-
-# Añadir el middleware de autenticación
-app.add_middleware(AuthMiddleware)
 
 @app.on_event("startup")
 async def startup_event():
