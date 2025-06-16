@@ -5,6 +5,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import RedirectResponse
+from starlette.templating import Jinja2Templates
 import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc
@@ -15,7 +16,7 @@ from app.db.session import engine, SessionLocal
 from app.db.init_db import init_db
 from app.routes.api import api_router
 from app.dashboard import create_dash_app
-from app.core.templates import templates
+# Usaremos configuración directa de templates en lugar de importar
 
 # Inicializar FastAPI
 app = FastAPI(
@@ -57,8 +58,10 @@ if settings.ENVIRONMENT == "production":
 # Montar archivos estáticos
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Template engine
-templates = Jinja2Templates(directory="templates")
+# Template engine - asegurarnos de que usamos la ruta correcta
+import os
+templates_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+templates = Jinja2Templates(directory=templates_dir)
 
 # OAuth2 configuration
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/login")
