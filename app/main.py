@@ -27,22 +27,13 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Middleware para sesiones
+# import para logging y middleware de sesiones
 import logging
 logger_main = logging.getLogger(__name__)
-logger_main.warning(f"MAIN.PY: Configurando SessionMiddleware con SECRET_KEY: '{settings.SECRET_KEY}' (Tipo: {type(settings.SECRET_KEY)})")
-
-# Convertir a middleware ASGI directo en lugar de usar add_middleware
-# Esta es una manera alternativa de aplicar middlewares que puede ser más confiable en algunos entornos
-from starlette.middleware.base import BaseHTTPMiddleware
-original_app = app  # Guarda la aplicación original
-
-# Aplicar SessionMiddleware directamente
 from starlette.middleware.sessions import SessionMiddleware
-app = SessionMiddleware(app, secret_key=settings.SECRET_KEY)  # Envuelve la app con SessionMiddleware
 
-# Si necesitamos acceso a la app original en algún lugar (por ejemplo, para registrar routers)
-# podemos guardar una referencia a ella como original_app
+# Configuración inicial de middlewares en la aplicación FastAPI original
+logger_main.warning(f"MAIN.PY: Preparando para configurar middlewares. SECRET_KEY: '{settings.SECRET_KEY}' (Tipo: {type(settings.SECRET_KEY)})")
 
 # Configurar middleware de seguridad en producción
 if settings.ENVIRONMENT == "production":
@@ -65,6 +56,12 @@ if settings.ENVIRONMENT == "production":
 
 # Montar archivos estáticos
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Template engine
+templates = Jinja2Templates(directory="templates")
+
+# OAuth2 configuration
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/login")
 
 # Dependencia para obtener la sesión de base de datos
 def get_db():
@@ -126,6 +123,11 @@ async def startup_event():
     # Inicializar la base de datos
     db = next(get_db())
     init_db(db)
+
+# IMPORTANTE: Este es el último paso, después de configurar todo lo demás:
+# Aplicar SessionMiddleware como capa externa final
+logger_main.warning(f"MAIN.PY: Aplicando SessionMiddleware como capa externa final")
+app = SessionMiddleware(app, secret_key=settings.SECRET_KEY)
 
 if __name__ == "__main__":
     import uvicorn
