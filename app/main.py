@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request, Depends, RedirectResponse
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.responses import RedirectResponse
 import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc
