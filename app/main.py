@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 import dash
 import dash_bootstrap_components as dbc
@@ -15,6 +14,7 @@ from app.db.session import engine, SessionLocal
 from app.db.init_db import init_db
 from app.routes.api import api_router
 from app.dashboard import create_dash_app
+from app.core.templates import templates
 
 # Inicializar FastAPI
 app = FastAPI(
@@ -53,9 +53,6 @@ app.add_middleware(
 
 # Montar archivos estáticos
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Configurar Jinja2Templates
-templates = Jinja2Templates(directory="templates")
 
 # Dependencia para obtener la sesión de base de datos
 def get_db():

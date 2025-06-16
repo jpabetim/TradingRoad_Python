@@ -5,9 +5,8 @@ from sqlalchemy.orm import Session
 from typing import Any, List
 
 from app import models, schemas
-from app.core import security, deps
+from app.core import security, deps, templates
 from app.config import settings
-from app.main import templates
 from datetime import timedelta
 
 router = APIRouter()
