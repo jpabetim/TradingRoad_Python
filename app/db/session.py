@@ -36,7 +36,7 @@ try:
     # Validar que la URL de PostgreSQL tenga formato correcto
     if database_url.startswith("postgresql://"):
         # Verificar si la URL tiene el patrón correcto
-        if not re.match(r'postgresql://[^:]+:[^@]+@[^/:]+:\d+/[^/]+', database_url):
+        if not re.match(r'postgresql://[^:]+:[^@]+@[^/:]+(?::\d+)?/[^/]+', database_url):
             logger.error(f"La URL de PostgreSQL parece estar mal formada. Usando SQLite como fallback.")
             database_url = "sqlite:///./tradingroad.db"
 
