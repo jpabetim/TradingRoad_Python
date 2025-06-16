@@ -257,7 +257,7 @@ layout = html.Div([
                             label='Indicadores',
                             color='dark',
                             className='m-0 p-0',
-                            align='end',
+                            align_end=True,
                             style={'width': '100%'},
                         ),
                         width={'size': 2, 'order': 4},
