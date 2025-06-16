@@ -27,6 +27,12 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+# Middleware para sesiones
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.SECRET_KEY
+)
+
 # Configurar middleware de seguridad en producción
 if settings.ENVIRONMENT == "production":
     app.add_middleware(HTTPSRedirectMiddleware)
@@ -44,12 +50,6 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["Content-Type", "Authorization"],
     max_age=600,  # Tiempo de caché para preflight (10 minutos)
-)
-
-# Middleware para sesiones
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=settings.SECRET_KEY
 )
 
 # Montar archivos estáticos
