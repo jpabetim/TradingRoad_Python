@@ -56,12 +56,20 @@ if settings.ENVIRONMENT == "production":
 #     max_age=600,  # Tiempo de caché para preflight (10 minutos)
 # )
 
-# Montar archivos estáticos
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Template engine - asegurarnos de que usamos la ruta correcta
+# Configuración de rutas para archivos estáticos y plantillas
 import os
-templates_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+
+# Obtener el directorio base del proyecto (un nivel arriba de donde está app/)
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Configurar directorio de archivos estáticos
+static_dir = os.path.join(base_dir, "static")
+logger_main.warning(f"MAIN.PY: Montando archivos estáticos desde: {static_dir}")
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+# Configurar directorio de plantillas
+templates_dir = os.path.join(base_dir, "templates")
+logger_main.warning(f"MAIN.PY: Directorio de templates configurado en: {templates_dir}")
 templates = Jinja2Templates(directory=templates_dir)
 
 # OAuth2 configuration
