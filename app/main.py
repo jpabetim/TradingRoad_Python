@@ -77,9 +77,19 @@ async def root(request: Request):
 # Middleware para proteger rutas del dashboard
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
+    # Intentar acceder a la sesión para CUALQUIER ruta para diagnóstico
+    try:
+        # La simple presencia de request.session ya haría el assert si falla
+        # No es necesario llamar a .get() para probar el assert
+        _ = request.session # Esto es suficiente para disparar el AssertionError si scope['session'] no existe
+    except AssertionError as e:
+        logger_main.error(f"AUTH_MIDDLEWARE: AssertionError al acceder a request.session: {e} (Ruta: {request.url.path})")
+        # Considerar si queremos que la app falle aquí para todas las rutas si la sesión no está disponible
+        # Por ahora, solo logueamos y continuamos para ver si el error es selectivo.
+
     if request.url.path.startswith("/dashboard"):
         # Verificar si hay una sesión activa del usuario
-        session = request.session.get("access_token")
+        session = request.session.get("access_token") # Esto probablemente seguirá fallando si el problema es fundamental
         if not session:
             # Redirigir al login si no hay sesión
             return RedirectResponse(url="/api/v1/auth/login_form", status_code=303)
