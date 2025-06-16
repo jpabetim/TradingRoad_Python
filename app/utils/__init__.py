@@ -5,6 +5,6 @@ Este paquete contiene módulos para obtención de datos de mercado y análisis t
 """
 
 from .market_data import MarketDataClient
-from .technical_analysis import TechnicalAnalysis
+from .technical_analysis import generate_analysis
 
-__all__ = ['MarketDataClient', 'TechnicalAnalysis']
+__all__ = ['MarketDataClient', 'generate_analysis']
