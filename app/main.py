@@ -59,16 +59,52 @@ if settings.ENVIRONMENT == "production":
 # Configuración de rutas para archivos estáticos y plantillas
 import os
 
-# Obtener el directorio base del proyecto (un nivel arriba de donde está app/)
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Prueba con diferentes rutas posibles para el entorno de Render y desarrollo local
+potential_base_dirs = [
+    # Ruta estándar: subir un nivel desde el directorio actual
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    # Ruta alternativa: el directorio raiz del proyecto en Render
+    "/opt/render/project/src",
+    # Ruta alternativa: el directorio actual (por si acaso)
+    os.path.dirname(os.path.abspath(__file__))
+]
 
-# Configurar directorio de archivos estáticos
-static_dir = os.path.join(base_dir, "static")
+# Buscar las carpetas templates y static en las posibles ubicaciones
+templates_dir = None
+static_dir = None
+
+for base in potential_base_dirs:
+    # Comprobar si existe el directorio de templates
+    test_templates = os.path.join(base, "templates")
+    if os.path.isdir(test_templates):
+        templates_dir = test_templates
+        # Si encontramos templates, ver si static está en el mismo nivel
+        test_static = os.path.join(base, "static")
+        if os.path.isdir(test_static):
+            static_dir = test_static
+        break
+
+# Si aún no hemos encontrado static, buscarlo de nuevo
+if static_dir is None:
+    for base in potential_base_dirs:
+        test_static = os.path.join(base, "static")
+        if os.path.isdir(test_static):
+            static_dir = test_static
+            break
+
+# Si no se encuentran las carpetas, usar las rutas por defecto
+if templates_dir is None:
+    templates_dir = os.path.join(potential_base_dirs[0], "templates")
+    logger_main.error(f"MAIN.PY: No se encontró el directorio de templates, usando ruta por defecto: {templates_dir}")
+
+if static_dir is None:
+    static_dir = os.path.join(potential_base_dirs[0], "static")
+    logger_main.error(f"MAIN.PY: No se encontró el directorio de archivos estáticos, usando ruta por defecto: {static_dir}")
+
+# Registrar las rutas encontradas
 logger_main.warning(f"MAIN.PY: Montando archivos estáticos desde: {static_dir}")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-# Configurar directorio de plantillas
-templates_dir = os.path.join(base_dir, "templates")
 logger_main.warning(f"MAIN.PY: Directorio de templates configurado en: {templates_dir}")
 templates = Jinja2Templates(directory=templates_dir)
 
