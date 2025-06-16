@@ -31,10 +31,18 @@ app = FastAPI(
 import logging
 logger_main = logging.getLogger(__name__)
 logger_main.warning(f"MAIN.PY: Configurando SessionMiddleware con SECRET_KEY: '{settings.SECRET_KEY}' (Tipo: {type(settings.SECRET_KEY)})")
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=settings.SECRET_KEY
-)
+
+# Convertir a middleware ASGI directo en lugar de usar add_middleware
+# Esta es una manera alternativa de aplicar middlewares que puede ser más confiable en algunos entornos
+from starlette.middleware.base import BaseHTTPMiddleware
+original_app = app  # Guarda la aplicación original
+
+# Aplicar SessionMiddleware directamente
+from starlette.middleware.sessions import SessionMiddleware
+app = SessionMiddleware(app, secret_key=settings.SECRET_KEY)  # Envuelve la app con SessionMiddleware
+
+# Si necesitamos acceso a la app original en algún lugar (por ejemplo, para registrar routers)
+# podemos guardar una referencia a ella como original_app
 
 # Configurar middleware de seguridad en producción
 if settings.ENVIRONMENT == "production":
@@ -96,13 +104,13 @@ async def auth_middleware(request: Request, call_next):
             # Si request.session falla aquí, es el mismo problema que el log anterior.
             # Para /dashboard/, la falta de sesión (por cualquier motivo) debe redirigir.
             logger_main.warning(f"AUTH_MIDDLEWARE: AssertionError for /dashboard/ session access: {e}. Redirecting to login.")
-            # Asumimos que la ruta del formulario de login se llama 'login_form'
-            return RedirectResponse(url=request.app.url_path_for("login_form"), status_code=303)
+            # URL hardcoded para evitar lookup de nombre de ruta
+            return RedirectResponse(url="/api/v1/auth/login_form", status_code=303)
 
         if not access_token:
             # Si no hay token de acceso en la sesión (aunque la sesión exista)
             logger_main.info(f"AUTH_MIDDLEWARE: No access_token in session for {request.url.path}. Redirecting to login.")
-            return RedirectResponse(url=request.app.url_path_for("login_form"), status_code=303)
+            return RedirectResponse(url="/api/v1/auth/login_form", status_code=303)
     
     # Continuar con la solicitud y obtener la respuesta del siguiente manejador
     response = await call_next(request)
