@@ -80,21 +80,31 @@ async def auth_middleware(request: Request, call_next):
     # Intentar acceder a la sesión para CUALQUIER ruta para diagnóstico
     try:
         # La simple presencia de request.session ya haría el assert si falla
-        # No es necesario llamar a .get() para probar el assert
-        _ = request.session # Esto es suficiente para disparar el AssertionError si scope['session'] no existe
+        _ = request.session 
     except AssertionError as e:
-        logger_main.error(f"AUTH_MIDDLEWARE: AssertionError al acceder a request.session: {e} (Ruta: {request.url.path})")
-        # Considerar si queremos que la app falle aquí para todas las rutas si la sesión no está disponible
-        # Por ahora, solo logueamos y continuamos para ver si el error es selectivo.
+        # Este log es útil para saber si la sesión está disponible en general para este middleware
+        logger_main.error(f"AUTH_MIDDLEWARE: General AssertionError accessing request.session: {e} (Ruta: {request.url.path})")
+        # No detenemos la solicitud aquí todavía, para que el endpoint pueda intentarlo también,
+        # o para que la lógica de /dashboard/ pueda decidir una redirección.
 
-    if request.url.path.startswith("/dashboard"):
-        # Verificar si hay una sesión activa del usuario
-        session = request.session.get("access_token") # Esto probablemente seguirá fallando si el problema es fundamental
-        if not session:
-            # Redirigir al login si no hay sesión
-            return RedirectResponse(url="/api/v1/auth/login_form", status_code=303)
+    if request.url.path.startswith("/dashboard/"): # Asegurar la barra al final
+        access_token = None
+        try:
+            # Intentar obtener el token de la sesión
+            access_token = request.session.get("access_token")
+        except AssertionError as e:
+            # Si request.session falla aquí, es el mismo problema que el log anterior.
+            # Para /dashboard/, la falta de sesión (por cualquier motivo) debe redirigir.
+            logger_main.warning(f"AUTH_MIDDLEWARE: AssertionError for /dashboard/ session access: {e}. Redirecting to login.")
+            # Asumimos que la ruta del formulario de login se llama 'login_form'
+            return RedirectResponse(url=request.app.url_path_for("login_form"), status_code=303)
+
+        if not access_token:
+            # Si no hay token de acceso en la sesión (aunque la sesión exista)
+            logger_main.info(f"AUTH_MIDDLEWARE: No access_token in session for {request.url.path}. Redirecting to login.")
+            return RedirectResponse(url=request.app.url_path_for("login_form"), status_code=303)
     
-    # Continuar con la solicitud normalmente
+    # Continuar con la solicitud y obtener la respuesta del siguiente manejador
     response = await call_next(request)
     return response
 
