@@ -75,11 +75,11 @@ async def root(request: Request):
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
     if request.url.path.startswith("/dashboard"):
-        # Verificar si hay una sesión
-        session = request.cookies.get("session")
+        # Verificar si hay una sesión activa del usuario
+        session = request.session.get("access_token")
         if not session:
             # Redirigir al login si no hay sesión
-            return RedirectResponse(url="/api/v1/auth/login_form")
+            return RedirectResponse(url="/api/v1/auth/login_form", status_code=303)
     
     # Continuar con la solicitud normalmente
     response = await call_next(request)
