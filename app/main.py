@@ -161,24 +161,35 @@ async def auth_middleware(request: Request, call_next):
     response = await call_next(request)
     return response
 
-# Importar WSGIMiddleware para adaptar aplicaciones WSGI (Dash/Flask) en ASGI (FastAPI)
-from starlette.middleware.wsgi import WSGIMiddleware
+# Primero aplicamos el middleware de sesiones a la aplicación FastAPI directamente
+from starlette.middleware import Middleware
+from starlette.middleware.sessions import SessionMiddleware
 
-# Crear e integrar la aplicación Dash con ruta consistente
-dash_app = create_dash_app("/dashboard/")  # Con slash final
-# Montar la aplicación Dash en FastAPI usando WSGIMiddleware para adaptar WSGI a ASGI
-app.mount("/dashboard", WSGIMiddleware(dash_app.server))  # Envolver el servidor Flask/Dash
+logger_main.warning(f"MAIN.PY: Aplicando SessionMiddleware como middleware en FastAPI")
+app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 @app.on_event("startup")
-async def startup_event():
-    # Inicializar la base de datos
+def startup_event():
+    # Obtener una sesión de base de datos
     db = next(get_db())
+    # Inicializar la base de datos (no es una función async)
     init_db(db)
+    logger_main.info("Base de datos inicializada en el evento de startup")
 
-# IMPORTANTE: Este es el último paso, después de configurar todo lo demás:
-# Aplicar SessionMiddleware como capa externa final
-logger_main.warning(f"MAIN.PY: Aplicando SessionMiddleware como capa externa final")
-app = SessionMiddleware(app, secret_key=settings.SECRET_KEY)
+# Creamos una ruta subyacente para el dashboard sin usar mount
+from starlette.responses import RedirectResponse
+
+@app.get("/dashboard")
+async def dashboard_redirect(request: Request):
+    return RedirectResponse("/dashboard/")
+
+# Configuramos Dash con una URL base
+dash_app = create_dash_app("/dashboard/")
+
+# Usar un middleware WSGI para la URL específica en vez de mount
+from starlette.middleware.wsgi import WSGIMiddleware
+
+app.mount("/dashboard/", WSGIMiddleware(dash_app.server))
 
 if __name__ == "__main__":
     import uvicorn
