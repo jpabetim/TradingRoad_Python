@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 # Importamos funciones de utilidad
 from app.utils.market_data import MarketDataClient  # Importamos la clase en lugar de la función
-from app.utils.technical_analysis import calculate_indicators, calculate_volatility
+from app.utils.technical_analysis import generate_analysis  # Usamos la función que sí existe
 
 # Definición de todas las funciones antes del layout
 def create_empty_chart(analysis_type, theme="dark"):
