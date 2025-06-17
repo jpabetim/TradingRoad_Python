@@ -15,9 +15,36 @@ class MarketDataClient:
     """Cliente para obtener datos de mercado exclusivamente a través de CCXT"""
     
     def __init__(self, exchange_id="binance", api_key=None, api_secret=None):
-        self.exchange_id = exchange_id.lower()
-        self.api_key = api_key
-        self.api_secret = api_secret
+        # Manejo de casos donde se pasa un diccionario de configuración completo
+        if isinstance(exchange_id, dict):
+            config = exchange_id
+            # Intentar extraer exchange_id del diccionario de configuración
+            if "exchange" in config:
+                self.exchange_id = config["exchange"].lower()
+            elif "default_exchange" in config:
+                self.exchange_id = config["default_exchange"].lower()
+            else:
+                self.exchange_id = "binance"  # Valor predeterminado
+            
+            # Intentar extraer API keys si están presentes en el config
+            try:
+                if self.exchange_id in config:
+                    self.api_key = config[self.exchange_id].get('api_key')
+                    self.api_secret = config[self.exchange_id].get('api_secret')
+                elif 'ccxt' in config and 'exchanges' in config['ccxt'] and \
+                     self.exchange_id in config['ccxt']['exchanges']:
+                    exchange_config = config['ccxt']['exchanges'][self.exchange_id]
+                    self.api_key = exchange_config.get('api_key')
+                    self.api_secret = exchange_config.get('api_secret')
+                    self.api_password = exchange_config.get('password')
+            except Exception as e:
+                print(f"Error al extraer configuración del diccionario: {e}")
+        else:
+            # Manejo normal cuando se pasa un string
+            self.exchange_id = str(exchange_id).lower()
+            self.api_key = api_key
+            self.api_secret = api_secret
+            
         self.ccxt_client = None
         
         # Intentar cargar configuración desde archivo si existe
