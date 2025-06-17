@@ -599,7 +599,7 @@ def create_advanced_analysis_chart(asset="BTC/USDT", timeframe="1h", exchange="b
     )
     
     # Crear un subplot para el volumen abajo
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
+    fig = sp.make_subplots(rows=2, cols=1, shared_xaxes=True, 
                        vertical_spacing=0.03, row_heights=[0.8, 0.2])
     
     try:
