@@ -99,7 +99,7 @@ def generate_complete_analysis(pair, timeframe, df=None):
 # Definir el diseño de la página
 
 # Layout principal de la página de trading - estilo Trading View
-layout = html.Div([
+layout = html.Div(children=[
     # Barra de navegación superior compacta con estilos mejorados
     dbc.Navbar(
         dbc.Container(
@@ -128,6 +128,58 @@ layout = html.Div([
                                 ),
                                 width='auto',
                                 className='ms-0',
+                            ),
+                            # Botón para noticias (icono)
+                            dbc.Col(
+                                dbc.Button(
+                                    html.I(className="fas fa-newspaper"),
+                                    id="news-button",
+                                    color="link",
+                                    className="text-light p-1",
+                                    size="sm",
+                                    title="Ver noticias"
+                                ),
+                                width='auto',
+                                className='ms-2',
+                            ),
+                            # Botón para mostrar análisis AI
+                            dbc.Col(
+                                dbc.Button(
+                                    html.I(className="fas fa-robot"),
+                                    id="show-ai-button",
+                                    color="info",
+                                    outline=True,
+                                    size="sm", 
+                                    title="Mostrar análisis AI"
+                                ),
+                                width='auto',
+                                className='ms-2',
+                            ),
+                            # Botón para cambiar tema
+                            dbc.Col(
+                                dbc.Button(
+                                    html.I(className="fas fa-sun"),
+                                    id="theme-toggle",
+                                    color="light",
+                                    outline=True,
+                                    size="sm",
+                                    title="Cambiar tema"
+                                ),
+                                width='auto',
+                                className='ms-2',
+                            ),
+                            # Botón para ocultar panel
+                            dbc.Col(
+                                dbc.Button(
+                                    html.I(className="fas fa-eye-slash"),
+                                    id="hide-ai-button",
+                                    color="secondary",
+                                    outline=True,
+                                    size="sm",
+                                    title="Ocultar panel"
+                                ),
+                                width='auto',
+                                className='ms-2',
                             ),
                         ],
                         className='g-0 ms-auto flex-nowrap mt-3 mt-md-0',
@@ -347,57 +399,206 @@ layout = html.Div([
             ),
             
             # Panel flotante para análisis técnico
+            # Panel lateral de análisis (estilo de las imágenes de referencia)
             html.Div(
                 [
                     # Cabecera del panel
                     html.Div(
                         [
-                            html.H5('Análisis Técnico Avanzado', className='mb-0 text-info'),
+                            html.H5('AI Analysis Results', className='text-info mb-0 fs-6'),
                             html.Button(
                                 html.I(className='fas fa-times'),
                                 id='close-analysis-panel',
                                 className='btn-close btn-close-white',
-                                style={'float': 'right'}
+                                style={'padding': '0.25rem'}
                             ),
                         ],
-                        className='d-flex justify-content-between align-items-center mb-2'
+                        className='d-flex justify-content-between align-items-center mb-3'
                     ),
                     
-                    # Contenido del análisis
-                    html.Div(id='ai-analysis-content', style={'maxHeight': '400px', 'overflowY': 'auto'})
+                    # Sección de escenario primario
+                    html.Div(
+                        [
+                            html.Div('Primary Scenario', className='text-info mb-2'),
+                            html.Div(id='primary-scenario-content', className='mb-3'),
+                            
+                            # Detalles adicionales como setup de trading
+                            html.Div(
+                                [
+                                    html.Div('Associated Setup:', className='text-info mb-1'),
+                                    html.Div(id='setup-type', className='fw-bold mb-1'),
+                                    html.Div(id='setup-description', className='small')
+                                ],
+                                className='mt-3 py-2 border-top border-dark'
+                            )
+                        ],
+                        id='ai-analysis-content'
+                    )
                 ],
                 id='analysis-panel',
                 className='p-3',
                 style={
                     'position': 'absolute',
                     'top': '70px',
-                    'right': '20px',
-                    'width': '400px',
-                    'backgroundColor': 'rgba(25, 30, 47, 0.95)',
+                    'left': '20px',  # Cambiado a la izquierda según las imágenes
+                    'width': '280px',
+                    'backgroundColor': 'rgba(19, 23, 34, 0.95)',
                     'border': '1px solid #2a2e39',
                     'borderRadius': '5px',
                     'zIndex': '1000',
                     'boxShadow': '0 4px 8px rgba(0,0,0,0.3)',
+                    'color': '#e0e0e0',
+                    'fontSize': '0.85rem',
                     'display': 'none'
                 }
             ),
         ],
         style={'position': 'relative'}
     ),
-], className='p-0 m-0', style={'backgroundColor': '#131722', 'height': '100%'})
+    
+    # Modal para noticias del mercado
+    dbc.Modal(
+        [
+            dbc.ModalHeader(dbc.ModalTitle("Noticias del Mercado"), close_button=True, id="close-news"),
+            dbc.ModalBody(
+                html.Div(
+                    [
+                        html.H5("Noticias Relevantes para el Mercado", className="mb-3"),
+                        html.Div(id="news-content", children=[
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader("Bitcoin alcanza nuevos máximos tras decisión de la FED", className="text-info fw-bold"),
+                                    dbc.CardBody([
+                                        html.P("El precio de Bitcoin ha superado los $65,000 tras el anuncio de la Reserva Federal de mantener las tasas de interés..."),
+                                        html.Small("Hace 2 horas · CoinDesk", className="text-muted")
+                                    ])
+                                ],
+                                className="mb-3"
+                            ),
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader("Ethereum completa actualización de red", className="text-info fw-bold"),
+                                    dbc.CardBody([
+                                        html.P("La red Ethereum ha completado exitosamente su última actualización, mejorando la eficiencia y reduciendo costos de transacción..."),
+                                        html.Small("Hace 5 horas · CryptoNews", className="text-muted")
+                                    ])
+                                ],
+                                className="mb-3"
+                            ),
+                        ])
+                    ]
+                )
+            ),
+        ],
+        id="news-modal",
+        size="lg",
+        is_open=False,
+    ),
+],
+className='p-0 m-0', style={'backgroundColor': '#131722', 'height': '100%'})
 
 
 def register_callbacks(app):
     """Registrar los callbacks para la página de trading"""
     
+    # Callback para cambiar entre tema claro y oscuro
+    @app.callback(
+        Output("theme-toggle", "children"),
+        Output("trading-chart", "figure", allow_duplicate=True),
+        Input("theme-toggle", "n_clicks"),
+        State("trading-chart", "figure"),
+        prevent_initial_call=True
+    )
+    def toggle_theme(n_clicks, current_figure):
+        """Alterna entre tema claro y oscuro"""
+        if n_clicks is None:
+            return dash.no_update, dash.no_update
+        
+        # Verifica el tema actual basado en el color de fondo
+        current_theme = "dark"  # por defecto
+        if current_figure and current_figure.get("layout", {}).get("paper_bgcolor") == "#FFFFFF":
+            current_theme = "light"
+        
+        if current_theme == "dark":
+            # Cambiar a tema claro
+            new_icon = html.I(className="fas fa-moon")
+            if current_figure:
+                current_figure["layout"]["paper_bgcolor"] = "#FFFFFF"
+                current_figure["layout"]["plot_bgcolor"] = "#F5F5F5"
+                current_figure["layout"]["font"] = {"color": "#333333"}
+                # Actualizar colores de cuadrícula y líneas
+                # Arreglo para xaxis y yaxis que pueden ser diccionarios o listas
+                xaxis = current_figure.get("layout", {}).get("xaxis", {})
+                yaxis = current_figure.get("layout", {}).get("yaxis", {})
+                
+                # Manejar tanto diccionario individual como lista de ejes
+                if isinstance(xaxis, dict):
+                    xaxis["gridcolor"] = "rgba(150,150,150,0.2)"
+                elif isinstance(xaxis, list):
+                    for axis in xaxis:
+                        if isinstance(axis, dict):
+                            axis["gridcolor"] = "rgba(150,150,150,0.2)"
+                            
+                if isinstance(yaxis, dict):
+                    yaxis["gridcolor"] = "rgba(150,150,150,0.2)"
+                elif isinstance(yaxis, list):
+                    for axis in yaxis:
+                        if isinstance(axis, dict):
+                            axis["gridcolor"] = "rgba(150,150,150,0.2)"
+            return new_icon, current_figure
+        else:
+            # Cambiar a tema oscuro
+            new_icon = html.I(className="fas fa-sun")
+            if current_figure:
+                current_figure["layout"]["paper_bgcolor"] = "#131722"
+                current_figure["layout"]["plot_bgcolor"] = "#131722"
+                current_figure["layout"]["font"] = {"color": "white"}
+                # Actualizar colores de cuadrícula y líneas
+                # Arreglo para xaxis y yaxis que pueden ser diccionarios o listas
+                xaxis = current_figure.get("layout", {}).get("xaxis", {})
+                yaxis = current_figure.get("layout", {}).get("yaxis", {})
+                
+                # Manejar tanto diccionario individual como lista de ejes
+                if isinstance(xaxis, dict):
+                    xaxis["gridcolor"] = "rgba(255,255,255,0.1)"
+                elif isinstance(xaxis, list):
+                    for axis in xaxis:
+                        if isinstance(axis, dict):
+                            axis["gridcolor"] = "rgba(255,255,255,0.1)"
+                            
+                if isinstance(yaxis, dict):
+                    yaxis["gridcolor"] = "rgba(255,255,255,0.1)"
+                elif isinstance(yaxis, list):
+                    for axis in yaxis:
+                        if isinstance(axis, dict):
+                            axis["gridcolor"] = "rgba(255,255,255,0.1)"
+            return new_icon, current_figure
+    
+    # Modal para noticias
+    @app.callback(
+        Output("news-modal", "is_open"),
+        [Input("news-button", "n_clicks"),
+         Input("close-news", "n_clicks")],
+        [State("news-modal", "is_open")],
+        prevent_initial_call=True
+    )
+    def toggle_news_modal(n_news, n_close, is_open):
+        """Abre o cierra el modal de noticias"""
+        if n_news or n_close:
+            return not is_open
+        return is_open
+    
+    # Callbacks y lógica para cada función
     @app.callback(
         Output("analysis-panel", "style"),
-        [Input("load-data-button", "n_clicks"), 
-         Input("close-analysis-panel", "n_clicks")],
+        [Input("load-data-button", "n_clicks"),
+         Input("close-analysis-panel", "n_clicks"),
+         Input("hide-ai-button", "n_clicks"),
+         Input("show-ai-button", "n_clicks")],
         [State("analysis-panel", "style")],
         prevent_initial_call=True
     )
-    def toggle_analysis_panel(load_clicks, close_clicks, current_style):
+    def toggle_analysis_panel(load_clicks, close_clicks, hide_clicks, show_clicks, current_style):
         """Mostrar u ocultar el panel de análisis flotante"""
         ctx = dash.callback_context
         
@@ -406,11 +607,11 @@ def register_callbacks(app):
         
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         
-        if button_id == "load-data-button":
-            # Mostrar panel cuando se cargan datos
+        if button_id in ["load-data-button", "show-ai-button"]:
+            # Mostrar panel cuando se cargan datos o se pulsa el botón mostrar
             current_style["display"] = "block"
-        elif button_id == "close-analysis-panel":
-            # Ocultar panel cuando se cierra
+        elif button_id in ["close-analysis-panel", "hide-ai-button"]:
+            # Ocultar panel cuando se cierra o se pulsa el botón ocultar
             current_style["display"] = "none"
             
         return current_style
@@ -1028,18 +1229,98 @@ def register_callbacks(app):
                 yanchor="bottom"
             )
         
-        # Generar análisis detallado usando la función que creamos
+        # Generar análisis usando la función que creamos
         analysis = generate_complete_analysis(pair, timeframe)
         
-        # Devolver tanto el gráfico como el análisis detallado
-        return fig, html.Div([
-            html.Div([
-                html.H5(f"Análisis Técnico: {pair} - {timeframe}", className="mb-3"),
-                html.Div(dangerouslySetInnerHTML={
-                    '__html': analysis
-                })
-            ])
-        ], style={'max-height': '600px', 'overflow-y': 'auto', 'padding': '15px', 'color': 'white', 'background-color': '#1e222d', 'border': '1px solid #2a2e39', 'border-radius': '5px'})
+        # Extraer información del análisis para mostrarla en el panel
+        # Simulamos la extracción del análisis principal y configuración
+        primary_scenario = "Escenario Principal: Continuación Bajista a POI de Demanda HTF"
+        scenario_description = "El precio se encuentra en un retroceso bajista desde el ATH y EH. Es probable que continúe la presión vendedora hasta los niveles de soporte clave en 2555-2540, donde hay confirmación de demanda en TF menor."
+        setup_type = "CORTO"
+        setup_description = "Entry a precio actual. Buscar una entrada en corto en la zona de oferta 2670-2700, con confirmación de una vela de rechazo o ChoCh bajista en 15M. Una entrada agresiva podría ser el retest del nivel EH."
+        
+        # Añadir puntos clave y línea de proyección al gráfico
+        # Estos puntos son ficticios, en la implementación real deberían calcularse
+        # basados en el análisis técnico
+        
+        # Punto de resistencia
+        fig.add_shape(
+            type="line",
+            x0=dates.iloc[-30],
+            y0=high_values.max() * 1.01,
+            x1=dates.iloc[-1],
+            y1=high_values.max() * 1.01,
+            line=dict(color="#FF0000", width=1.5),
+            row=1, col=1
+        )
+        
+        # Punto de soporte
+        fig.add_shape(
+            type="line",
+            x0=dates.iloc[-30],
+            y0=low_values.min() * 0.99,
+            x1=dates.iloc[-1],
+            y1=low_values.min() * 0.99,
+            line=dict(color="#00FF00", width=1.5),
+            row=1, col=1
+        )
+        
+        # Línea de proyección (línea azul discontinua)
+        # Extendemos la línea hacia el futuro para mostrar la proyección
+        last_date = dates.iloc[-1]
+        future_date = pd.Timestamp(last_date) + pd.Timedelta(days=2)
+        
+        fig.add_shape(
+            type="line",
+            x0=dates.iloc[-10],
+            y0=close_values.iloc[-10],
+            x1=future_date,
+            y1=low_values.min() * 0.995,  # Proyección hacia el soporte
+            line=dict(color="#4299E1", width=2, dash="dash"),
+            row=1, col=1
+        )
+        
+        # Añadir puntos de Fibonacci (los niveles se calculan normalmente como porcentajes)
+        # entre el máximo y el mínimo
+        price_range = high_values.max() - low_values.min()
+        fib_levels = [
+            ("Resistencia 38.2%", high_values.max() - price_range * 0.382),
+            ("Resistencia 50.0%", high_values.max() - price_range * 0.5),
+            ("Resistencia 61.8%", high_values.max() - price_range * 0.618)
+        ]
+        
+        for label, level in fib_levels:
+            fig.add_shape(
+                type="line",
+                x0=dates.iloc[0],
+                y0=level,
+                x1=dates.iloc[-1],
+                y1=level,
+                line=dict(color="rgba(66, 153, 225, 0.6)", width=1, dash="dot"),
+                row=1, col=1
+            )
+            
+            fig.add_annotation(
+                x=dates.iloc[-1],
+                y=level,
+                text=f"Retracement {label.split()[1]}",
+                showarrow=False,
+                font=dict(size=9, color="#4299E1"),
+                align="right",
+                xanchor="right",
+                bgcolor="rgba(19, 23, 34, 0.7)",
+                bordercolor="#4299E1",
+                borderpad=2,
+                row=1, col=1
+            )
+            
+        # Devolver el gráfico con análisis y elementos de proyección
+        return fig, [
+            html.Div(primary_scenario, id="primary-scenario-content", className="mb-3"),
+            html.P(scenario_description, className="small mb-3"),
+            html.Div(setup_type, id="setup-type", className="fw-bold mb-1"),
+            html.Div(setup_description, id="setup-description", className="small")
+        ]
     
     @app.callback(
         Output("positions-container", "children"),
