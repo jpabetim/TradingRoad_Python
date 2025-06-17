@@ -1,4 +1,5 @@
 import dash
+import os
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from .pages import home, trading, analysis, settings, analysis_tv, analysis_lwc
@@ -13,10 +14,14 @@ def create_dash_app(routes_pathname_prefix):
     Returns:
         La aplicación Dash configurada
     """
+    # Correctly locate the assets folder, which is two levels up from this file's directory.
+    assets_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'assets'))
+
     # Crear una aplicación Dash independiente (sin servidor Flask)
     app = dash.Dash(
         __name__,
         requests_pathname_prefix=routes_pathname_prefix,
+        assets_folder=assets_path,
         external_stylesheets=[dbc.themes.DARKLY],
         external_scripts=[{'src': 'https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js'}],
         suppress_callback_exceptions=True,
