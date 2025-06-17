@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.subplots as sp
+from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
 import time
