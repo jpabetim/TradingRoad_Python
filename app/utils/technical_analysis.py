@@ -159,3 +159,81 @@ def generate_analysis(df, symbol, timeframe):
             <p>Precio actual: ${df['close'].iloc[-1]:,.2f}</p>
         </div>
         """
+
+
+def calculate_volatility(df, window=14):
+    """
+    Calcula la volatilidad de un activo basada en la desviación estándar de los rendimientos
+    
+    Args:
+        df: DataFrame con datos OHLCV
+        window: Ventana de tiempo para el cálculo (por defecto 14 períodos)
+        
+    Returns:
+        float: Valor de volatilidad anualizada (en porcentaje)
+    """
+    if df.empty or len(df) < window:
+        return 0.0
+    
+    # Calcular rendimientos logarítmicos diarios
+    returns = np.log(df["close"] / df["close"].shift(1))
+    
+    # Calcular desviación estándar de los rendimientos
+    std_dev = returns.rolling(window=window).std().iloc[-1]
+    
+    # Anualizar la volatilidad (dependiendo del timeframe)
+    # Por simplicidad asumimos timeframe diario
+    annualized_vol = std_dev * np.sqrt(252) * 100  # 252 días de trading al año
+    
+    return annualized_vol
+
+
+def get_technical_indicators(df, window_short=20, window_medium=50, window_long=200, rsi_period=14):
+    """
+    Calcula indicadores técnicos principales para un DataFrame OHLCV
+    
+    Args:
+        df: DataFrame con datos OHLCV
+        window_short: Ventana corta para SMA (por defecto 20)
+        window_medium: Ventana media para SMA (por defecto 50)
+        window_long: Ventana larga para SMA (por defecto 200)
+        rsi_period: Período para RSI (por defecto 14)
+        
+    Returns:
+        dict: Diccionario con los indicadores calculados
+    """
+    if df.empty:
+        return {}
+        
+    result = {}
+    
+    # Medias Móviles
+    result["sma_short"] = df["close"].rolling(window=window_short).mean().iloc[-1]
+    result["sma_medium"] = df["close"].rolling(window=window_medium).mean().iloc[-1]
+    result["sma_long"] = df["close"].rolling(window=window_long).mean().iloc[-1]
+    
+    # RSI
+    delta = df["close"].diff()
+    gain = delta.where(delta > 0, 0).fillna(0)
+    loss = -delta.where(delta < 0, 0).fillna(0)
+    
+    avg_gain = gain.rolling(window=rsi_period).mean()
+    avg_loss = loss.rolling(window=rsi_period).mean()
+    
+    rs = avg_gain / avg_loss
+    result["rsi"] = 100 - (100 / (1 + rs)).iloc[-1]
+    
+    # MACD
+    ema12 = df["close"].ewm(span=12, adjust=False).mean()
+    ema26 = df["close"].ewm(span=26, adjust=False).mean()
+    result["macd"] = (ema12 - ema26).iloc[-1]
+    result["macd_signal"] = (ema12 - ema26).ewm(span=9, adjust=False).mean().iloc[-1]
+    
+    # Volatilidad
+    result["volatility"] = calculate_volatility(df)
+    
+    # Últimos precios
+    result["current_price"] = df["close"].iloc[-1]
+    result["prev_close"] = df["close"].iloc[-2] if len(df) > 1 else 0
+    
+    return result
