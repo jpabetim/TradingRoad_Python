@@ -176,52 +176,55 @@ def create_tv_chart_component(height=700):
             id="tv-script"
         ),
         
-        # Estilos personalizados para el componente
-        html.Style(
-            """
-            .tv-controls {
-                background-color: #131722;
-                border-bottom: 1px solid #2a2e39;
+        # Utilizamos dcc.Store para guardar los estilos que aplicaremos con JavaScript
+        dcc.Store(
+            id="tv-chart-styles",
+            data={
+                "css": """
+                .tv-controls {
+                    background-color: #131722;
+                    border-bottom: 1px solid #2a2e39;
+                }
+                .tv-chart-col {
+                    border-right: 1px solid #2a2e39;
+                    padding-right: 0;
+                    padding-left: 0;
+                }
+                .tv-sidebar-col {
+                    background-color: #131722;
+                    padding: 0;
+                }
+                .tv-sidebar {
+                    height: 100%;
+                }
+                .tv-dropdown .Select-control {
+                    background-color: #2a2e39;
+                    border-color: #2a2e39;
+                    color: #d1d4dc;
+                }
+                .tv-input {
+                    background-color: #2a2e39;
+                    border-color: #2a2e39;
+                    color: #d1d4dc;
+                }
+                .tv-tf-button {
+                    padding: 0.2rem 0.5rem;
+                    margin-right: 2px;
+                }
+                .tv-ai-section {
+                    background-color: #1c2030;
+                    border-radius: 4px;
+                    border: 1px solid #2a2e39;
+                }
+                .tv-checkbox-group .form-check {
+                    margin-right: 12px;
+                }
+                .tv-checkbox-group .form-check-label {
+                    color: #d1d4dc;
+                    font-size: 0.875rem;
+                }
+                """
             }
-            .tv-chart-col {
-                border-right: 1px solid #2a2e39;
-                padding-right: 0;
-                padding-left: 0;
-            }
-            .tv-sidebar-col {
-                background-color: #131722;
-                padding: 0;
-            }
-            .tv-sidebar {
-                height: 100%;
-            }
-            .tv-dropdown .Select-control {
-                background-color: #2a2e39;
-                border-color: #2a2e39;
-                color: #d1d4dc;
-            }
-            .tv-input {
-                background-color: #2a2e39;
-                border-color: #2a2e39;
-                color: #d1d4dc;
-            }
-            .tv-tf-button {
-                padding: 0.2rem 0.5rem;
-                margin-right: 2px;
-            }
-            .tv-ai-section {
-                background-color: #1c2030;
-                border-radius: 4px;
-                border: 1px solid #2a2e39;
-            }
-            .tv-checkbox-group .form-check {
-                margin-right: 12px;
-            }
-            .tv-checkbox-group .form-check-label {
-                color: #d1d4dc;
-                font-size: 0.875rem;
-            }
-            """
         ),
         
         # Almacenamiento de datos para el gráfico
