@@ -108,7 +108,7 @@ def create_tv_chart_component(height=700):
                     
                     # Configuración de visualización
                     html.Div([
-                        html.H6("Display Settings", className="text-light mb-2 d-flex align-items-center",
+                        html.H6(className="text-light mb-2 d-flex align-items-center",
                                children=[html.I(className="fas fa-cog me-2"), "Display Settings"]),
                         dbc.Collapse([
                             dbc.CheckboxGroup(
