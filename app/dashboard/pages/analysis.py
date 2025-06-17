@@ -1303,7 +1303,7 @@ layout = html.Div(children=[
 ])
 
 # Callback para mostrar/ocultar el panel de análisis
-@app.callback(
+@callback(
     Output("analysis-panel", "style"),
     Output("main-chart-container", "style"),
     [Input("load-data-button", "n_clicks"),
@@ -1336,7 +1336,7 @@ def toggle_analysis_panel(load_clicks, close_clicks, show_clicks, panel_style, m
     return new_panel_style, new_container_style
 
 # Callback para mostrar/ocultar el panel de volatilidad
-@app.callback(
+@callback(
     Output("volatility-panel", "style"),
     [Input("toggle-volatility", "n_clicks"),
      Input("close-volatility", "n_clicks")],
@@ -1363,7 +1363,7 @@ def toggle_volatility_panel(toggle_clicks, close_clicks, current_style):
     return new_style
 
 # Callback para mostrar/ocultar el panel de correlación
-@app.callback(
+@callback(
     Output("correlation-panel", "style"),
     [Input("toggle-correlation", "n_clicks"),
      Input("close-correlation", "n_clicks")],
@@ -1390,7 +1390,7 @@ def toggle_correlation_panel(toggle_clicks, close_clicks, current_style):
     return new_style
 
 # Callback para cambiar entre tema claro/oscuro
-@app.callback(
+@callback(
     Output("theme-toggle", "children"),
     Output("trading-chart", "figure", allow_duplicate=True),
     Output("correlation-chart", "figure"),
@@ -1429,7 +1429,7 @@ def toggle_theme(n_clicks, children, main_figure, correlation_figure):
     return new_icon, main_figure, correlation_figure
 
 # Callback para mostrar/ocultar el modal de noticias
-@app.callback(
+@callback(
     Output("news-modal", "is_open"),
     [Input("news-button", "n_clicks")],
     [State("news-modal", "is_open")],
@@ -1441,7 +1441,7 @@ def toggle_news_modal(n_clicks, is_open):
     return is_open
 
 # Callback para activar/desactivar la actualización en tiempo real
-@app.callback(
+@callback(
     Output("chart-interval", "disabled"),
     [Input("real-time-update", "value")],
     prevent_initial_call=True
@@ -1450,7 +1450,7 @@ def toggle_real_time_update(active):
     return not active
 
 # Callback para actualizar el gráfico principal con todas las características avanzadas
-@app.callback(
+@callback(
     [Output("trading-chart", "figure", allow_duplicate=True),
      Output("ai-analysis-content", "children")],
     [Input("load-data-button", "n_clicks"),
@@ -1516,7 +1516,7 @@ def update_analysis_chart(load_clicks, n_intervals, tf_5m, tf_15m, tf_30m, tf_1h
     return fig, ai_content
 
 # Callback para actualizar el gráfico de volatilidad
-@app.callback(
+@callback(
     Output("volatility-chart", "figure"),
     [Input("toggle-volatility", "n_clicks"),
      Input("tf-5m", "n_clicks"),
