@@ -20,12 +20,12 @@ def register_callbacks(app):
     
     # Callback para mostrar/ocultar el panel de análisis
     @app.callback(
-        Output("analysis-panel", "style"),
+        Output("analysis-detail-panel", "style"),
         Output("main-chart-container", "style"),
         [Input("load-data-button", "n_clicks"),
-         Input("close-analysis-panel", "n_clicks"),
+         Input("close-analysis-detail-panel", "n_clicks"),
          Input("show-ai-button", "n_clicks")],
-        [State("analysis-panel", "style"),
+        [State("analysis-detail-panel", "style"),
          State("main-chart-container", "style")],
         prevent_initial_call=True
     )
@@ -45,7 +45,7 @@ def register_callbacks(app):
         if button_id in ["load-data-button", "show-ai-button"]:
             new_panel_style["display"] = "block"
             new_container_style["marginLeft"] = "350px"
-        elif button_id == "close-analysis-panel":
+        elif button_id == "close-analysis-detail-panel":
             new_panel_style["display"] = "none"
             new_container_style["marginLeft"] = "0px"
         
@@ -53,7 +53,7 @@ def register_callbacks(app):
     
     # Callback para activar/desactivar la actualización en tiempo real
     @app.callback(
-        Output("chart-interval", "disabled"),
+        Output("analysis-chart-interval", "disabled"),
         [Input("real-time-update", "value")],
         prevent_initial_call=True
     )
@@ -65,7 +65,7 @@ def register_callbacks(app):
         [Output("trading-chart", "figure", allow_duplicate=True),
          Output("analysis-ai-content", "children")],
         [Input("load-data-button", "n_clicks"),
-         Input("chart-interval", "n_intervals"),
+         Input("analysis-chart-interval", "n_intervals"),
          Input("tf-5m", "n_clicks"),
          Input("tf-15m", "n_clicks"),
          Input("tf-30m", "n_clicks"),
@@ -777,7 +777,7 @@ def generate_ai_analysis_content(timeframe="1h", pair="BTC/USDT"):
                     html.H5(f"Análisis IA para {pair}", className="text-light mb-0 d-inline"),
                     html.Button(
                         html.I(className="fas fa-times"),
-                        id="close-analysis-panel",
+                        id="close-analysis-detail-panel",
                         className="btn-close btn-close-white float-end",
                         style={"background": "none"}
                     )
@@ -1088,7 +1088,7 @@ layout = html.Div(children=[
                             html.H5("AI Analysis Results", className="m-0 text-light"),
                             html.Button(
                                 html.I(className="fas fa-times"),
-                                id="close-analysis-panel",
+                                id="close-analysis-detail-panel",
                                 className="btn-close btn-close-white",
                                 style={"background": "none"}
                             ),
@@ -1159,7 +1159,7 @@ layout = html.Div(children=[
                         },
                     ),
                 ],
-                id="analysis-panel",
+                id="analysis-detail-panel",
                 style={
                     "position": "fixed",
                     "left": "0",
@@ -1398,7 +1398,7 @@ layout = html.Div(children=[
     
     # Componente de intervalo para actualizaciones automáticas
     dcc.Interval(
-        id='chart-interval',
+        id='analysis-chart-interval',
         interval=15*1000,  # 15 segundos
         n_intervals=0,
         disabled=True
