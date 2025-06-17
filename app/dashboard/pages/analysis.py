@@ -19,6 +19,124 @@ from app.utils.technical_analysis import generate_analysis  # Usamos la función
 def register_callbacks(app):
     """Registrar los callbacks para la página de análisis"""
     
+    # Callback para mostrar/ocultar el panel de analytics (correlación y volatilidad)
+    @app.callback(
+        Output("analytics-panel", "style"),
+        Output("main-chart-area", "className"),
+        [Input("toggle-analytics-panel", "n_clicks")],
+        [State("analytics-panel", "style")],
+        prevent_initial_call=True
+    )
+    def toggle_analytics_panel(n_clicks, current_style):
+        """Mostrar u ocultar el panel de analytics con correlación y volatilidad"""
+        if current_style is None or current_style.get("display") == "none":
+            # Mostrar el panel
+            return {"display": "block"}, "col-md-8"
+        else:
+            # Ocultar el panel
+            return {"display": "none"}, "col-md-12"
+    
+    # Callback para cambiar entre pestañas de correlación y volatilidad
+    @app.callback(
+        Output("correlation-content", "style"),
+        Output("volatility-content", "style"),
+        [Input("analytics-tabs", "active_tab")],
+        prevent_initial_call=True
+    )
+    def switch_analytics_tab(active_tab):
+        """Cambiar entre las pestañas de correlación y volatilidad"""
+        if active_tab == "correlation-tab":
+            return {"display": "block"}, {"display": "none"}
+        else:
+            return {"display": "none"}, {"display": "block"}
+    
+    # Callback para actualizar el gráfico de volatilidad basado en los timeframes
+    @app.callback(
+        Output("volatility-chart", "figure"),
+        [Input("vol-tf-5m", "n_clicks"),
+         Input("vol-tf-15m", "n_clicks"),
+         Input("vol-tf-1h", "n_clicks"),
+         Input("vol-tf-4h", "n_clicks"),
+         Input("vol-tf-1d", "n_clicks"),
+         Input("assets-dropdown", "value")]
+    )
+    def update_volatility_chart_new(tf_5m, tf_15m, tf_1h, tf_4h, tf_1d, pair):
+        """Actualiza el gráfico de volatilidad basado en el timeframe seleccionado"""
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            return create_volatility_chart()
+        
+        button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        
+        # Determinar timeframe seleccionado
+        timeframe = "1h"  # Valor predeterminado
+        if button_id == "vol-tf-5m":
+            timeframe = "5m"
+        elif button_id == "vol-tf-15m":
+            timeframe = "15m"
+        elif button_id == "vol-tf-1h":
+            timeframe = "1h"
+        elif button_id == "vol-tf-4h":
+            timeframe = "4h"
+        elif button_id == "vol-tf-1d":
+            timeframe = "1d"
+        
+        # Obtener datos y crear gráfico de volatilidad
+        return create_volatility_chart(timeframe=timeframe, pair=pair)
+    
+    # Callback para actualizar los colores de los botones de timeframe de volatilidad
+    @app.callback(
+        [Output("vol-tf-5m", "color"),
+         Output("vol-tf-15m", "color"),
+         Output("vol-tf-1h", "color"),
+         Output("vol-tf-4h", "color"),
+         Output("vol-tf-1d", "color"),
+         Output("vol-tf-5m", "outline"),
+         Output("vol-tf-15m", "outline"),
+         Output("vol-tf-1h", "outline"),
+         Output("vol-tf-4h", "outline"),
+         Output("vol-tf-1d", "outline")],
+        [Input("vol-tf-5m", "n_clicks"),
+         Input("vol-tf-15m", "n_clicks"),
+         Input("vol-tf-1h", "n_clicks"),
+         Input("vol-tf-4h", "n_clicks"),
+         Input("vol-tf-1d", "n_clicks")],
+        prevent_initial_call=True
+    )
+    def update_volatility_tf_buttons(n5m, n15m, n1h, n4h, n1d):
+        """Actualiza los colores de los botones de timeframe para volatilidad"""
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            # Valores predeterminados (1h seleccionado)
+            return ["dark", "dark", "primary", "dark", "dark", 
+                    True, True, False, True, True]
+        
+        button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        
+        # Colores predeterminados (todos dark y outline)
+        colors = ["dark", "dark", "dark", "dark", "dark"]
+        outlines = [True, True, True, True, True]
+        
+        # Cambiar el color del botón seleccionado
+        if button_id == "vol-tf-5m":
+            colors[0] = "primary"
+            outlines[0] = False
+        elif button_id == "vol-tf-15m":
+            colors[1] = "primary"
+            outlines[1] = False
+        elif button_id == "vol-tf-1h":
+            colors[2] = "primary"
+            outlines[2] = False
+        elif button_id == "vol-tf-4h":
+            colors[3] = "primary"
+            outlines[3] = False
+        elif button_id == "vol-tf-1d":
+            colors[4] = "primary"
+            outlines[4] = False
+            
+        return colors + outlines
+            
+    
     # Callback para mostrar/ocultar el panel de análisis
     @app.callback(
         Output("analysis-detail-panel", "style"),
@@ -1163,36 +1281,24 @@ layout = html.Div(children=[
         className="mb-2",
     ),
     
-    # Fila de botones de control adicionales, más compactos
+    # Fila de botones de control principales
     dbc.Row([
         dbc.Col([
             dbc.ButtonGroup([
-                # Botón para mostrar/ocultar panel de volatilidad
+                # Botón para mostrar/ocultar panel unificado de análisis avanzado
                 dbc.Button(
-                    html.I(className="fas fa-chart-line"),
-                    id="toggle-volatility",
-                    color="light",
-                    outline=True,
+                    [html.I(className="fas fa-analytics"), " Analytics"], 
+                    id="toggle-analytics-panel",
+                    color="info",
                     size="sm",
                     className="me-1",
-                    title="Mostrar/ocultar gráfico de volatilidad"
-                ),
-                # Botón para mostrar/ocultar panel de correlación
-                dbc.Button(
-                    html.I(className="fas fa-project-diagram"),
-                    id="toggle-correlation",
-                    color="light",
-                    outline=True,
-                    size="sm",
-                    className="me-1",
-                    title="Mostrar/ocultar correlación de activos"
+                    title="Mostrar/ocultar panel de análisis avanzado"
                 ),
                 # Botón para mostrar/ocultar panel de análisis AI
                 dbc.Button(
-                    html.I(className="fas fa-robot"),
+                    [html.I(className="fas fa-robot"), " AI Analysis"],
                     id="show-ai-button",
-                    color="light",
-                    outline=True,
+                    color="success",
                     size="sm",
                     className="me-1",
                     title="Mostrar/ocultar análisis AI"
@@ -1236,8 +1342,124 @@ layout = html.Div(children=[
     ], className="mb-2 ms-2"),
     
     # Contenedor principal para el gráfico y paneles laterales
-    html.Div(
+    # Contenedor principal con sistema de grid para responsividad
+    dbc.Container(
         [
+            # Fila principal que contiene el gráfico y el panel lateral
+            dbc.Row(
+                [
+                    # Columna principal para el gráfico
+                    dbc.Col(
+                        [
+                            # Gráfico principal
+                            dcc.Loading(
+                                id="loading-main-chart",
+                                type="default",
+                                children=[
+                                    dcc.Graph(
+                                        id="main-chart",
+                                        figure=create_empty_chart("technical"),
+                                        style={"height": "70vh"},
+                                        config={
+                                            "scrollZoom": True,
+                                            "displayModeBar": True,
+                                            "modeBarButtonsToRemove": [
+                                                "select2d", "lasso2d", "resetScale2d"
+                                            ],
+                                        }
+                                    ),
+                                ]
+                            ),
+                        ],
+                        id="main-chart-area",
+                        className="col-md-12",  # Ocupa todo el ancho cuando no hay panel lateral
+                    ),
+                    
+                    # Panel lateral de analytics (correlación y volatilidad)
+                    dbc.Col(
+                        [
+                            # Panel de analytics con pestañas
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(
+                                        dbc.Tabs(
+                                            [
+                                                dbc.Tab(
+                                                    label="Correlación",
+                                                    tab_id="correlation-tab"
+                                                ),
+                                                dbc.Tab(
+                                                    label="Volatilidad",
+                                                    tab_id="volatility-tab"
+                                                ),
+                                            ],
+                                            id="analytics-tabs",
+                                            active_tab="correlation-tab",
+                                        )
+                                    ),
+                                    dbc.CardBody(
+                                        [
+                                            # Contenido de la pestaña de correlación
+                                            html.Div(
+                                                [
+                                                    dcc.Loading(
+                                                        id="loading-correlation",
+                                                        type="default",
+                                                        children=[
+                                                            dcc.Graph(
+                                                                id="correlation-heatmap",
+                                                                figure=create_correlation_heatmap(),
+                                                                style={"height": "35vh"}
+                                                            )
+                                                        ]
+                                                    ),
+                                                ],
+                                                id="correlation-content",
+                                            ),
+                                            
+                                            # Contenido de la pestaña de volatilidad
+                                            html.Div(
+                                                [
+                                                    # Botones de timeframe para volatilidad
+                                                    dbc.ButtonGroup(
+                                                        [
+                                                            dbc.Button("5m", id="vol-tf-5m", color="dark", outline=True, size="sm"),
+                                                            dbc.Button("15m", id="vol-tf-15m", color="dark", outline=True, size="sm"),
+                                                            dbc.Button("1h", id="vol-tf-1h", color="primary", size="sm"),
+                                                            dbc.Button("4h", id="vol-tf-4h", color="dark", outline=True, size="sm"),
+                                                            dbc.Button("1d", id="vol-tf-1d", color="dark", outline=True, size="sm"),
+                                                        ],
+                                                        className="mb-2",
+                                                    ),
+                                                    dcc.Loading(
+                                                        id="loading-volatility",
+                                                        type="default",
+                                                        children=[
+                                                            dcc.Graph(
+                                                                id="volatility-chart",
+                                                                figure=create_volatility_chart(),
+                                                                style={"height": "30vh"}
+                                                            )
+                                                        ]
+                                                    ),
+                                                ],
+                                                id="volatility-content",
+                                                style={"display": "none"},
+                                            ),
+                                        ]
+                                    ),
+                                ],
+                                className="h-100",
+                            ),
+                        ],
+                        id="analytics-panel",
+                        className="col-md-4",
+                        style={"display": "none"},  # Oculto por defecto
+                    ),
+                ],
+                className="mb-4",
+            ),
+            
             # Panel lateral de análisis (flotante a la izquierda)
             html.Div(
                 [

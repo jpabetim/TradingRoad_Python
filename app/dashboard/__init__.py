@@ -1,7 +1,9 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from .pages import home, trading, analysis, settings, analysis_tv, analysis_lwc
+from .pages import home, trading, analysis, settings
+# Ya no importamos módulos adicionales de análisis que se eliminarán
+# Aún importamos el análisis principal que se mantendrá como único punto de entrada
 
 def create_dash_app(routes_pathname_prefix):
     """
@@ -18,12 +20,6 @@ def create_dash_app(routes_pathname_prefix):
         __name__,
         requests_pathname_prefix=routes_pathname_prefix,
         external_stylesheets=[dbc.themes.DARKLY],
-        # Load external scripts: the main library from a CDN and our custom clientside script
-        # from the /static path served by FastAPI.
-        external_scripts=[
-            {'src': 'https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js'},
-            {'src': '/static/lwc_clientside.js'}
-        ],
         suppress_callback_exceptions=True,
         # Importante: Permitir a Dash acceder a las cookies de FastAPI
         update_title=None,
@@ -71,10 +67,7 @@ def create_dash_app(routes_pathname_prefix):
             return trading.layout
         elif pathname == routes_pathname_prefix + 'analysis' or pathname == routes_pathname_prefix + 'analysis/':
             return analysis.layout
-        elif pathname == routes_pathname_prefix + 'analysis_tv' or pathname == routes_pathname_prefix + 'analysis_tv/':
-            return analysis_tv.layout
-        elif pathname == routes_pathname_prefix + 'analysis_lwc' or pathname == routes_pathname_prefix + 'analysis_lwc/':
-            return analysis_lwc.layout()
+
         elif pathname == routes_pathname_prefix + 'settings' or pathname == routes_pathname_prefix + 'settings/':
             return settings.layout
         else:
@@ -89,9 +82,8 @@ def create_dash_app(routes_pathname_prefix):
     # Registrar callbacks de las páginas
     home.register_callbacks(app)
     trading.register_callbacks(app)
-    analysis.register_callbacks(app)
-    analysis_tv.register_callbacks(app)
-    analysis_lwc.register_callbacks(app)
+    analysis.register_callbacks(app)  # Solo mantenemos el análisis principal
+
     settings.register_callbacks(app)
     
     return app
@@ -106,8 +98,6 @@ def create_navbar():
                     [
                         dbc.NavItem(dbc.NavLink("Trading", href="/dashboard/trading")),
                         dbc.NavItem(dbc.NavLink("Análisis", href="/dashboard/analysis")),
-                        dbc.NavItem(dbc.NavLink("Análisis Pro", href="/dashboard/analysis_tv")),
-                        dbc.NavItem(dbc.NavLink("Análisis LWC", href="/dashboard/analysis_lwc")),
                         dbc.NavItem(dbc.NavLink("Configuración", href="/dashboard/settings")),
                     ],
                     className="ms-auto",
