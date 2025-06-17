@@ -65,7 +65,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # Configure and mount static files from the 'assets' directory
 assets_dir = os.path.join(project_root, 'assets')
 if os.path.isdir(assets_dir):
-    app.mount("/static", StaticFiles(directory=assets_dir), name="static_assets")
+    app.mount("/static", StaticFiles(directory=assets_dir), name="static")
     logger_main.info(f"Serving static files from: {assets_dir}")
 else:
     logger_main.error(f"Assets directory not found at {assets_dir}. Static files will not be served.")
