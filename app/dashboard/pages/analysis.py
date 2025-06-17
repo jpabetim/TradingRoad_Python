@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timedelta
 
 # Importamos funciones de utilidad
-from app.utils.market_data import get_historical_data
+from app.utils.market_data import MarketDataClient  # Importamos la clase en lugar de la función
 from app.utils.technical_analysis import calculate_indicators, calculate_volatility
 
 # Definición de todas las funciones antes del layout
