@@ -9,7 +9,7 @@ import time
 import os
 
 from app.utils.market_data import get_ohlcv_data
-from app.utils.technical_analysis import calculate_indicators
+from app.utils.technical_analysis import get_technical_indicators
 
 # Página de análisis técnico avanzado con TradingView charts
 def create_analysis_lw_page():
