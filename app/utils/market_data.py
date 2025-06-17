@@ -296,3 +296,23 @@ class MarketDataClient:
         
         # Usar el cliente actual
         return self.get_ohlcv_data(symbol, timeframe, limit)
+
+
+# Funciones auxiliares para uso directo sin necesidad de instanciar la clase
+def get_ohlcv_data(exchange="binance", symbol="BTC/USDT", timeframe="1h", limit=100, since=None):
+    """
+    Obtiene datos OHLCV para un símbolo y timeframe específicos
+    Esta función es un wrapper sobre MarketDataClient.get_ohlcv_data para facilitar su uso
+    
+    Args:
+        exchange (str): ID del exchange (por defecto 'binance')
+        symbol (str): Símbolo en formato 'BTC/USDT'
+        timeframe (str): Intervalo de tiempo ('1m', '5m', '15m', '1h', '4h', '1d', etc)
+        limit (int): Cantidad máxima de velas a obtener
+        since (int): Timestamp UNIX en milisegundos para inicio de datos
+        
+    Returns:
+        DataFrame: Datos OHLCV con columnas [timestamp, open, high, low, close, volume]
+    """
+    client = MarketDataClient(exchange)
+    return client.get_ohlcv_data(symbol, timeframe, limit, since)
