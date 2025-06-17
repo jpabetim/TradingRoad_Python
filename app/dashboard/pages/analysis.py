@@ -63,7 +63,7 @@ def register_callbacks(app):
     # Callback para actualizar el gráfico principal con todas las características avanzadas
     @app.callback(
         [Output("trading-chart", "figure", allow_duplicate=True),
-         Output("ai-analysis-content", "children")],
+         Output("analysis-ai-content", "children")],
         [Input("load-data-button", "n_clicks"),
          Input("chart-interval", "n_intervals"),
          Input("tf-5m", "n_clicks"),
@@ -1099,7 +1099,7 @@ layout = html.Div(children=[
                     
                     # Contenido del panel con scroll
                     html.Div(
-                        id="ai-analysis-content",
+                        id="analysis-ai-content",
                         children=[
                             html.Div(
                                 [
