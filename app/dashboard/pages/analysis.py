@@ -1,24 +1,89 @@
 import dash
-from dash import html, dcc, Input, Output, State
+from dash import html, dcc, Input, Output, State, callback_context
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import plotly.express as px
-import plotly.subplots as sp
-from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
-import time
 from datetime import datetime, timedelta
+import json
+import time
 
-# Importamos funciones de utilidad
+# Importaciones locales
+from app.dashboard.components import sidebar
+from app.utils.market_data import get_ohlcv_data
+from app.utils.technical_analysis import get_technical_indicators, calculate_volatility
+from app.dashboard.pages.analysis_tv_chart import create_tv_chart_component, prepare_tv_chart_data
 from app.utils.market_data import MarketDataClient  # Importamos la clase en lugar de la función
 from app.utils.technical_analysis import generate_analysis  # Usamos la función que sí existe
 
 # Funciones auxiliares y definición del layout se mantienen fuera de register_callbacks
 
 def register_callbacks(app):
-    """Registrar los callbacks para la página de análisis"""
+    """
+    Registrar todos los callbacks necesarios para la página de análisis
     
+    Args:
+        app: Aplicación Dash
+    """
+    # Importamos los callbacks para el componente TradingView
+    from app.dashboard.pages.analysis_tv_chart import register_tv_chart_callbacks
+    
+    # Registramos los callbacks del componente TradingView
+    register_tv_chart_callbacks(app)
+    
+    # Callback para activar/desactivar la actualización en tiempo real
+    @app.callback(
+        [Output("real-time-update-interval", "disabled"),
+         Output("real-time-status", "children")],
+        [Input("real-time-update-toggle", "value")]
+    )
+    def toggle_real_time_update(auto_update):
+        """Activa o desactiva la actualización en tiempo real"""
+        if auto_update:
+            msg = html.Span(["Actualización automática ", html.Strong("activada"), ". Actualizando cada 15 segundos"])
+            return False, msg  # Habilitar intervalo
+        else:
+            return True, ""  # Deshabilitar intervalo
+
+    # Callback para cargar datos OHLCV y prepararlos para TradingView
+    @app.callback(
+        Output("analysis-chart-data", "data"),
+        [Input("analysis-load-data-signal", "data"),
+         Input("real-time-update-interval", "n_intervals")],
+        [State("real-time-update-toggle", "value")]
+    )
+    def load_chart_data(signal, n_intervals, auto_update):
+        """Carga datos OHLCV para el gráfico TradingView"""
+        ctx = dash.callback_context
+        triggered_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else None
+        
+        # Solo actualizar si viene de la señal de carga o del intervalo cuando auto_update está activo
+        if triggered_id == 'real-time-update-interval' and not auto_update:
+            return dash.no_update
+            
+        if signal is None:
+            return dash.no_update
+            
+        try:
+            exchange = signal.get('exchange', 'binance')
+            symbol = signal.get('symbol', 'BTC/USDT')
+            timeframe = signal.get('timeframe', '1h')
+            
+            # Obtener datos OHLCV usando la utilidad existente
+            df = get_ohlcv_data(exchange, symbol, timeframe, limit=500)
+            
+            if df is None or df.empty:
+                return dash.no_update
+                
+            # Convertir DataFrame a lista de diccionarios para JSON
+            chart_data = df.to_dict(orient='records')
+            
+            return chart_data
+        except Exception as e:
+            print(f"Error al cargar datos del gráfico: {str(e)}")
+            return dash.no_update
+
     # Callback para mostrar/ocultar el panel de analytics (correlación y volatilidad)
     @app.callback(
         Output("analytics-panel", "style"),
@@ -1351,24 +1416,40 @@ layout = html.Div(children=[
                     # Columna principal para el gráfico
                     dbc.Col(
                         [
-                            # Gráfico principal
+                            # Gráfico principal TradingView avanzado
                             dcc.Loading(
                                 id="loading-main-chart",
                                 type="default",
                                 children=[
-                                    dcc.Graph(
-                                        id="main-chart",
-                                        figure=create_empty_chart("technical"),
-                                        style={"height": "70vh"},
-                                        config={
-                                            "scrollZoom": True,
-                                            "displayModeBar": True,
-                                            "modeBarButtonsToRemove": [
-                                                "select2d", "lasso2d", "resetScale2d"
-                                            ],
-                                        }
+                                    html.Div(
+                                        id="tv-chart-main-container",
+                                        children=create_tv_chart_component(height=70), 
+                                        style={"height": "70vh", "width": "100%"}
                                     ),
                                 ]
+                            ),
+                            
+                            # Botón de actualización en tiempo real
+                            dbc.Row([
+                                dbc.Col([
+                                    dbc.Switch(
+                                        id="real-time-update-toggle",
+                                        label="Actualización en tiempo real",
+                                        value=False,
+                                        className="mt-2"
+                                    ),
+                                ], width=4),
+                                dbc.Col([
+                                    html.Div(id="real-time-status", className="text-success mt-2")
+                                ], width=8)
+                            ]),
+                            
+                            # Intervalo de actualización
+                            dcc.Interval(
+                                id="real-time-update-interval",
+                                interval=15*1000,  # 15 segundos
+                                n_intervals=0,
+                                disabled=True
                             ),
                         ],
                         id="main-chart-area",
@@ -1778,12 +1859,23 @@ layout = html.Div(children=[
     ),
     
     # Componente de intervalo para actualizaciones automáticas
+    # Intervalo para actualización en tiempo real
     dcc.Interval(
-        id='analysis-chart-interval',
+        id='real-time-update-interval',  # Nuevo id para el intervalo de actualización en tiempo real
         interval=15*1000,  # 15 segundos
         n_intervals=0,
         disabled=True
     ),
+    
+    # Componentes de almacenamiento para el gráfico TradingView
+    dcc.Store(id='analysis-chart-data', data=[]),
+    dcc.Store(id='analysis-load-data-signal', data={'exchange': 'binance', 'symbol': 'BTC/USDT', 'timeframe': '1h'}),
+    dcc.Store(id='analysis-exchange-list', data=[]),
+    
+    # Componentes específicos para TradingView avanzado
+    dcc.Store(id='tv-timeframe', data='1h'),  # Timeframe por defecto
+    dcc.Store(id='tv-theme', data='dark'),     # Tema por defecto
+    dcc.Store(id='tv-panel-visible', data=True)  # Panel visible por defecto
 ])
 
 # La función generate_ai_analysis_content ya está implementada anteriormente en el archivo
