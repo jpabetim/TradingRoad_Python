@@ -1,9 +1,8 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from .pages import home, trading, analysis, settings
-# Ya no importamos módulos adicionales de análisis que se eliminarán
-# Aún importamos el análisis principal que se mantendrá como único punto de entrada
+from .pages import home, trading, analysis, settings, analysis_lw_chart
+# Importamos el nuevo componente de lightweight-charts
 
 def create_dash_app(routes_pathname_prefix):
     """
@@ -20,6 +19,10 @@ def create_dash_app(routes_pathname_prefix):
         __name__,
         requests_pathname_prefix=routes_pathname_prefix,
         external_stylesheets=[dbc.themes.DARKLY],
+        external_scripts=[
+            # Script de TradingView Lightweight Charts
+            "https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"
+        ],
         suppress_callback_exceptions=True,
         # Importante: Permitir a Dash acceder a las cookies de FastAPI
         update_title=None,
@@ -67,7 +70,10 @@ def create_dash_app(routes_pathname_prefix):
             return trading.layout
         elif pathname == routes_pathname_prefix + 'analysis' or pathname == routes_pathname_prefix + 'analysis/':
             return analysis.layout
-
+            
+        elif pathname == routes_pathname_prefix + 'analysis-lw' or pathname == routes_pathname_prefix + 'analysis-lw/':
+            return analysis_lw_chart.create_analysis_lw_page()
+            
         elif pathname == routes_pathname_prefix + 'settings' or pathname == routes_pathname_prefix + 'settings/':
             return settings.layout
         else:
@@ -84,6 +90,8 @@ def create_dash_app(routes_pathname_prefix):
     trading.register_callbacks(app)
     analysis.register_callbacks(app)  # Solo mantenemos el análisis principal
 
+    analysis_lw_chart.register_lw_chart_callbacks(app)  # Nuevo componente de lightweight-charts
+    
     settings.register_callbacks(app)
     
     return app
@@ -98,6 +106,7 @@ def create_navbar():
                     [
                         dbc.NavItem(dbc.NavLink("Trading", href="/dashboard/trading")),
                         dbc.NavItem(dbc.NavLink("Análisis", href="/dashboard/analysis")),
+                        dbc.NavItem(dbc.NavLink("Análisis LW", href="/dashboard/analysis-lw")),
                         dbc.NavItem(dbc.NavLink("Configuración", href="/dashboard/settings")),
                     ],
                     className="ms-auto",
