@@ -76,6 +76,13 @@ class MarketDataClient:
         if self.exchange_id in ccxt.exchanges:
             try:
                 exchange_class = getattr(ccxt, self.exchange_id)
+                
+                # Asegurar que api_key y api_secret estén inicializados
+                if not hasattr(self, 'api_key') or self.api_key is None:
+                    self.api_key = ""
+                if not hasattr(self, 'api_secret') or self.api_secret is None:
+                    self.api_secret = ""
+                
                 config = {
                     'apiKey': self.api_key,
                     'secret': self.api_secret,
