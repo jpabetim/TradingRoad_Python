@@ -1,7 +1,7 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from .pages import home, trading, analysis, settings, analysis_tv
+from .pages import home, trading, analysis, settings, analysis_tv, analysis_lwc
 
 def create_dash_app(routes_pathname_prefix):
     """
@@ -18,6 +18,7 @@ def create_dash_app(routes_pathname_prefix):
         __name__,
         requests_pathname_prefix=routes_pathname_prefix,
         external_stylesheets=[dbc.themes.DARKLY],
+        external_scripts=[{'src': 'https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js'}],
         suppress_callback_exceptions=True,
         # Importante: Permitir a Dash acceder a las cookies de FastAPI
         update_title=None,
@@ -67,6 +68,8 @@ def create_dash_app(routes_pathname_prefix):
             return analysis.layout
         elif pathname == routes_pathname_prefix + 'analysis_tv' or pathname == routes_pathname_prefix + 'analysis_tv/':
             return analysis_tv.layout
+        elif pathname == routes_pathname_prefix + 'analysis_lwc' or pathname == routes_pathname_prefix + 'analysis_lwc/':
+            return analysis_lwc.layout
         elif pathname == routes_pathname_prefix + 'settings' or pathname == routes_pathname_prefix + 'settings/':
             return settings.layout
         else:
@@ -83,6 +86,7 @@ def create_dash_app(routes_pathname_prefix):
     trading.register_callbacks(app)
     analysis.register_callbacks(app)
     analysis_tv.register_callbacks(app)
+    analysis_lwc.register_callbacks(app)
     settings.register_callbacks(app)
     
     return app
@@ -98,6 +102,7 @@ def create_navbar():
                         dbc.NavItem(dbc.NavLink("Trading", href="/dashboard/trading")),
                         dbc.NavItem(dbc.NavLink("Análisis", href="/dashboard/analysis")),
                         dbc.NavItem(dbc.NavLink("Análisis Pro", href="/dashboard/analysis_tv")),
+                        dbc.NavItem(dbc.NavLink("Análisis LWC", href="/dashboard/analysis_lwc")),
                         dbc.NavItem(dbc.NavLink("Configuración", href="/dashboard/settings")),
                     ],
                     className="ms-auto",
