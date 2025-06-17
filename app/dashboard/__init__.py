@@ -1,7 +1,7 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from .pages import home, trading, analysis, settings
+from .pages import home, trading, analysis, settings, analysis_tv
 
 def create_dash_app(routes_pathname_prefix):
     """
@@ -65,6 +65,8 @@ def create_dash_app(routes_pathname_prefix):
             return trading.layout
         elif pathname == routes_pathname_prefix + 'analysis' or pathname == routes_pathname_prefix + 'analysis/':
             return analysis.layout
+        elif pathname == routes_pathname_prefix + 'analysis_tv' or pathname == routes_pathname_prefix + 'analysis_tv/':
+            return analysis_tv.layout
         elif pathname == routes_pathname_prefix + 'settings' or pathname == routes_pathname_prefix + 'settings/':
             return settings.layout
         else:
@@ -80,6 +82,7 @@ def create_dash_app(routes_pathname_prefix):
     home.register_callbacks(app)
     trading.register_callbacks(app)
     analysis.register_callbacks(app)
+    analysis_tv.register_callbacks(app)
     settings.register_callbacks(app)
     
     return app
@@ -94,6 +97,7 @@ def create_navbar():
                     [
                         dbc.NavItem(dbc.NavLink("Trading", href="/dashboard/trading")),
                         dbc.NavItem(dbc.NavLink("Análisis", href="/dashboard/analysis")),
+                        dbc.NavItem(dbc.NavLink("Análisis Pro", href="/dashboard/analysis_tv")),
                         dbc.NavItem(dbc.NavLink("Configuración", href="/dashboard/settings")),
                     ],
                     className="ms-auto",
