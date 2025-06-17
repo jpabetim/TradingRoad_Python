@@ -22,11 +22,12 @@ def create_analysis_lw_page():
         dcc.Store(id='analysis-lw-load-data-signal', data={'timestamp': time.time()}),
         dcc.Store(id='lw-timeframe', data='1h'),
         
-        # Intervalo para actualización en tiempo real
+        # Intervalo de actualización en tiempo real específico para lightweight charts
         dcc.Interval(
-            id='real-time-update-interval',
-            interval=15000,  # 15 segundos
-            disabled=True    # Inicialmente desactivado
+            id='lw-real-time-update-interval',
+            interval=15000,  # en milisegundos (15 seg)
+            n_intervals=0,
+            disabled=True
         ),
         
         # Controles de datos
@@ -259,7 +260,7 @@ def register_lw_chart_callbacks(app):
     @app.callback(
         Output('analysis-lw-chart-data', 'data'),
         [Input('analysis-lw-load-data-signal', 'data'), 
-         Input('real-time-update-interval', 'n_intervals')],
+         Input('lw-real-time-update-interval', 'n_intervals')],
         [State('analysis-exchange-selector', 'value'),
          State('analysis-symbol-selector', 'value'),
          State('analysis-timeframe-selector', 'value'),
@@ -291,7 +292,7 @@ def register_lw_chart_callbacks(app):
         return timeframe
     
     @app.callback(
-        Output('real-time-update-interval', 'disabled'),
+        Output('lw-real-time-update-interval', 'disabled'),
         [Input('real-time-update-toggle', 'value')]
     )
     def toggle_real_time_updates(enabled):

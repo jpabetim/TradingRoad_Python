@@ -106,7 +106,6 @@ def create_navbar():
                     [
                         dbc.NavItem(dbc.NavLink("Trading", href="/dashboard/trading")),
                         dbc.NavItem(dbc.NavLink("Análisis", href="/dashboard/analysis")),
-                        dbc.NavItem(dbc.NavLink("Análisis LW", href="/dashboard/analysis-lw")),
                         dbc.NavItem(dbc.NavLink("Configuración", href="/dashboard/settings")),
                     ],
                     className="ms-auto",
