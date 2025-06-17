@@ -10,7 +10,6 @@ import json
 import time
 
 # Importaciones locales
-from app.dashboard.components import sidebar
 from app.utils.market_data import get_ohlcv_data
 from app.utils.technical_analysis import get_technical_indicators, calculate_volatility
 from app.dashboard.pages.analysis_tv_chart import create_tv_chart_component, prepare_tv_chart_data
