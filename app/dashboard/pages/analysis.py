@@ -54,7 +54,7 @@ def register_callbacks(app):
     # Callback para activar/desactivar la actualización en tiempo real
     @app.callback(
         Output("analysis-chart-interval", "disabled"),
-        [Input("real-time-update", "value")],
+        [Input("analysis-real-time-update", "value")],
         prevent_initial_call=True
     )
     def toggle_interval(active):
@@ -62,22 +62,22 @@ def register_callbacks(app):
     
     # Callback para actualizar el gráfico principal con todas las características avanzadas
     @app.callback(
-        [Output("trading-chart", "figure", allow_duplicate=True),
+        [Output("analysis-chart", "figure"),
          Output("analysis-ai-content", "children")],
-        [Input("load-data-button", "n_clicks"),
+        [Input("analysis-load-data-button", "n_clicks"),
          Input("analysis-chart-interval", "n_intervals"),
-         Input("tf-5m", "n_clicks"),
-         Input("tf-15m", "n_clicks"),
-         Input("tf-30m", "n_clicks"),
-         Input("tf-1h", "n_clicks"),
-         Input("tf-4h", "n_clicks"),
-         Input("tf-1d", "n_clicks")],
-        [State("exchange-selector", "value"),
-         State("pair-selector", "value"),
-         State("sma-checklist", "value"),
-         State("ema-checklist", "value"),
-         State("other-indicators-checklist", "value"),
-         State("real-time-update", "active")],
+         Input("analysis-tf-5m", "n_clicks"),
+         Input("analysis-tf-15m", "n_clicks"),
+         Input("analysis-tf-30m", "n_clicks"),
+         Input("analysis-tf-1h", "n_clicks"),
+         Input("analysis-tf-4h", "n_clicks"),
+         Input("analysis-tf-1d", "n_clicks")],
+        [State("analysis-exchange-selector", "value"),
+         State("analysis-pair-selector", "value"),
+         State("analysis-sma-checklist", "value"),
+         State("analysis-ema-checklist", "value"),
+         State("analysis-other-indicators-checklist", "value"),
+         State("analysis-real-time-update", "active")],
         prevent_initial_call=True
     )
     def update_trading_chart(n_clicks, n_intervals, tf_5m, tf_15m, tf_30m, tf_1h, tf_4h, tf_1d, exchange, pair, sma_periods, ema_periods, other_indicators, real_time_active):
@@ -89,17 +89,17 @@ def register_callbacks(app):
         # Determinar el timeframe basado en los botones
         timeframe = "1h"  # valor por defecto
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-        if button_id == "tf-5m":
+        if button_id == "analysis-tf-5m":
             timeframe = "5m"
-        elif button_id == "tf-15m":
+        elif button_id == "analysis-tf-15m":
             timeframe = "15m"
-        elif button_id == "tf-30m":
+        elif button_id == "analysis-tf-30m":
             timeframe = "30m"
-        elif button_id == "tf-1h":
+        elif button_id == "analysis-tf-1h":
             timeframe = "1h"
-        elif button_id == "tf-4h":
+        elif button_id == "analysis-tf-4h":
             timeframe = "4h"
-        elif button_id == "tf-1d":
+        elif button_id == "analysis-tf-1d":
             timeframe = "1d"
         
         # Crear una figura para el análisis técnico avanzado (pueden ser datos reales o simulados)
@@ -685,17 +685,17 @@ def update_volatility_chart(vol_clicks, tf_5m, tf_15m, tf_30m, tf_1h, tf_4h, tf_
     
     # Determinar timeframe seleccionado
     timeframe = "1h"  # Valor predeterminado
-    if button_id == "tf-5m":
+    if button_id == "analysis-tf-5m":
         timeframe = "5m"
-    elif button_id == "tf-15m":
+    elif button_id == "analysis-tf-15m":
         timeframe = "15m"
-    elif button_id == "tf-30m":
+    elif button_id == "analysis-tf-30m":
         timeframe = "30m"
-    elif button_id == "tf-1h":
+    elif button_id == "analysis-tf-1h":
         timeframe = "1h"
-    elif button_id == "tf-4h":
+    elif button_id == "analysis-tf-4h":
         timeframe = "4h"
-    elif button_id == "tf-1d":
+    elif button_id == "analysis-tf-1d":
         timeframe = "1d"
     
     # Simular carga de datos
@@ -857,7 +857,7 @@ layout = html.Div(children=[
                     [
                         dbc.Button(
                             "Bi...", # Botón con texto abreviado para ahorrar espacio
-                            id="exchange-selector-dropdown", 
+                            id="analysis-exchange-selector", 
                             color="dark",
                             size="sm",
                             className="border-secondary",
@@ -886,7 +886,7 @@ layout = html.Div(children=[
                     [
                         dbc.Button(
                             "BTC/USDT",
-                            id="pair-display", 
+                            id="analysis-pair-selector", 
                             color="dark",
                             size="sm",
                             className="border-secondary",
@@ -914,12 +914,12 @@ layout = html.Div(children=[
                 # Grupo de botones para timeframe compacto
                 dbc.ButtonGroup(
                     [
-                        dbc.Button("5m", id="tf-5m", color="dark", size="sm", className="px-1", outline=True),
-                        dbc.Button("15m", id="tf-15m", color="dark", size="sm", className="px-1", outline=True),
-                        dbc.Button("30m", id="tf-30m", color="dark", size="sm", className="px-1", outline=True),
-                        dbc.Button("1h", id="tf-1h", color="dark", size="sm", className="px-1", outline=True),
-                        dbc.Button("4h", id="tf-4h", color="dark", size="sm", className="px-1", outline=True),
-                        dbc.Button("1d", id="tf-1d", color="dark", size="sm", className="px-1", outline=True),
+                        dbc.Button("5m", id="analysis-tf-5m", color="dark", size="sm", className="px-1", outline=True),
+                        dbc.Button("15m", id="analysis-tf-15m", color="dark", size="sm", className="px-1", outline=True),
+                        dbc.Button("30m", id="analysis-tf-30m", color="dark", size="sm", className="px-1", outline=True),
+                        dbc.Button("1h", id="analysis-tf-1h", color="dark", size="sm", className="px-1", outline=True),
+                        dbc.Button("4h", id="analysis-tf-4h", color="dark", size="sm", className="px-1", outline=True),
+                        dbc.Button("1d", id="analysis-tf-1d", color="dark", size="sm", className="px-1", outline=True),
                     ],
                     className="me-1",
                 ),
@@ -987,12 +987,19 @@ layout = html.Div(children=[
                         html.I(className='fas fa-chart-line me-1'),
                         "Cargar",
                     ],
-                    id='load-data-button',
+                    id='analysis-load-data-button',
                     color='primary',
                     size='sm',
                     n_clicks=0,
                     className="me-1",
                 ),
+                
+                # Checklists ocultos para indicadores (usados en callbacks)
+                html.Div([
+                    dcc.Checklist(id="analysis-sma-checklist", value=["20", "50", "200"], style={"display": "none"}),
+                    dcc.Checklist(id="analysis-ema-checklist", value=["20"], style={"display": "none"}),
+                    dcc.Checklist(id="analysis-other-indicators-checklist", value=["rsi", "macd", "bollinger"], style={"display": "none"}),
+                ], style={"display": "none"}),
                 
                 # Spacer para alinear a la derecha
                 html.Div(className="ms-auto d-flex")
@@ -1061,7 +1068,7 @@ layout = html.Div(children=[
                 # Botón para actualizar en tiempo real
                 dbc.Button(
                     dbc.Switch(
-                        id="real-time-update",
+                        id="analysis-real-time-update",
                         label="Tiempo Real",
                         value=False,
                         className="ms-1"
@@ -1182,7 +1189,7 @@ layout = html.Div(children=[
                         [
                             dbc.Col(
                                 dcc.Graph(
-                                    id="trading-chart",
+                                    id="analysis-chart",
                                     figure=create_advanced_analysis_chart(), 
                                     style={
                                         "height": "calc(100vh - 130px)",  # Altura dinámica
