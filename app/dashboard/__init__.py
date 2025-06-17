@@ -69,7 +69,7 @@ def create_dash_app(routes_pathname_prefix):
         elif pathname == routes_pathname_prefix + 'analysis_tv' or pathname == routes_pathname_prefix + 'analysis_tv/':
             return analysis_tv.layout
         elif pathname == routes_pathname_prefix + 'analysis_lwc' or pathname == routes_pathname_prefix + 'analysis_lwc/':
-            return analysis_lwc.layout
+            return analysis_lwc.layout()
         elif pathname == routes_pathname_prefix + 'settings' or pathname == routes_pathname_prefix + 'settings/':
             return settings.layout
         else:
