@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Input, Output, State
+from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import plotly.express as px
@@ -12,6 +12,109 @@ from datetime import datetime, timedelta
 # Importamos funciones de utilidad
 from app.utils.market_data import MarketDataClient  # Importamos la clase en lugar de la función
 from app.utils.technical_analysis import generate_analysis  # Usamos la función que sí existe
+
+# Funciones auxiliares y definición del layout se mantienen fuera de register_callbacks
+
+def register_callbacks(app):
+    """Registrar los callbacks para la página de análisis"""
+    
+    # Callback para mostrar/ocultar el panel de análisis
+    @app.callback(
+        Output("analysis-panel", "style"),
+        Output("main-chart-container", "style"),
+        [Input("load-data-button", "n_clicks"),
+         Input("close-analysis-panel", "n_clicks"),
+         Input("show-ai-button", "n_clicks")],
+        [State("analysis-panel", "style"),
+         State("main-chart-container", "style")],
+        prevent_initial_call=True
+    )
+    def toggle_analysis_panel(load_clicks, close_clicks, show_clicks, panel_style, main_container_style):
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            return panel_style, main_container_style
+        
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        panel_visible = panel_style.get("display") != "none"
+        
+        # Copiar los estilos para no modificar los originales
+        new_panel_style = dict(panel_style)
+        new_container_style = dict(main_container_style)
+        
+        # Mostrar u ocultar según el botón pulsado
+        if button_id in ["load-data-button", "show-ai-button"]:
+            new_panel_style["display"] = "block"
+            new_container_style["marginLeft"] = "350px"
+        elif button_id == "close-analysis-panel":
+            new_panel_style["display"] = "none"
+            new_container_style["marginLeft"] = "0px"
+        
+        return new_panel_style, new_container_style
+    
+    # Callback para activar/desactivar la actualización en tiempo real
+    @app.callback(
+        Output("chart-interval", "disabled"),
+        [Input("real-time-update", "value")],
+        prevent_initial_call=True
+    )
+    def toggle_interval(active):
+        return not active
+    
+    # Callback para actualizar el gráfico principal con todas las características avanzadas
+    @app.callback(
+        [Output("trading-chart", "figure", allow_duplicate=True),
+         Output("ai-analysis-content", "children")],
+        [Input("load-data-button", "n_clicks"),
+         Input("chart-interval", "n_intervals"),
+         Input("tf-5m", "n_clicks"),
+         Input("tf-15m", "n_clicks"),
+         Input("tf-30m", "n_clicks"),
+         Input("tf-1h", "n_clicks"),
+         Input("tf-4h", "n_clicks"),
+         Input("tf-1d", "n_clicks")],
+        [State("exchange-selector", "value"),
+         State("pair-selector", "value"),
+         State("sma-checklist", "value"),
+         State("ema-checklist", "value"),
+         State("other-indicators-checklist", "value"),
+         State("real-time-update", "active")],
+        prevent_initial_call=True
+    )
+    def update_trading_chart(n_clicks, n_intervals, tf_5m, tf_15m, tf_30m, tf_1h, tf_4h, tf_1d, exchange, pair, sma_periods, ema_periods, other_indicators, real_time_active):
+        """Actualiza el gráfico de análisis técnico con todos los indicadores"""
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            return dash.no_update, dash.no_update
+        
+        # Determinar el timeframe basado en los botones
+        timeframe = "1h"  # valor por defecto
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        if button_id == "tf-5m":
+            timeframe = "5m"
+        elif button_id == "tf-15m":
+            timeframe = "15m"
+        elif button_id == "tf-30m":
+            timeframe = "30m"
+        elif button_id == "tf-1h":
+            timeframe = "1h"
+        elif button_id == "tf-4h":
+            timeframe = "4h"
+        elif button_id == "tf-1d":
+            timeframe = "1d"
+        
+        # Crear una figura para el análisis técnico avanzado (pueden ser datos reales o simulados)
+        indicators = {
+            "sma": sma_periods if sma_periods else [],
+            "ema": ema_periods if ema_periods else [],
+            "other": other_indicators if other_indicators else []
+        }
+        
+        fig = create_advanced_analysis_chart(pair, timeframe, exchange, "dark", indicators)
+        
+        # Generar análisis de IA para el par seleccionado
+        ai_content = generate_ai_analysis_content(timeframe, pair)
+        
+        return fig, ai_content
 
 # Definición de todas las funciones antes del layout
 def create_empty_chart(analysis_type, theme="dark"):
@@ -1301,263 +1404,6 @@ layout = html.Div(children=[
         disabled=True
     ),
 ])
-
-# Callback para mostrar/ocultar el panel de análisis
-@callback(
-    Output("analysis-panel", "style"),
-    Output("main-chart-container", "style"),
-    [Input("load-data-button", "n_clicks"),
-     Input("close-analysis-panel", "n_clicks"),
-     Input("show-ai-button", "n_clicks")],
-    [State("analysis-panel", "style"),
-     State("main-chart-container", "style")],
-    prevent_initial_call=True
-)
-def toggle_analysis_panel(load_clicks, close_clicks, show_clicks, panel_style, main_container_style):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        return panel_style, main_container_style
-    
-    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    panel_visible = panel_style.get("display") != "none"
-    
-    # Copiar los estilos para no modificar los originales
-    new_panel_style = dict(panel_style)
-    new_container_style = dict(main_container_style)
-    
-    # Mostrar u ocultar según el botón pulsado
-    if button_id in ["load-data-button", "show-ai-button"]:
-        new_panel_style["display"] = "block"
-        new_container_style["marginLeft"] = "350px"
-    elif button_id == "close-analysis-panel":
-        new_panel_style["display"] = "none"
-        new_container_style["marginLeft"] = "0px"
-    
-    return new_panel_style, new_container_style
-
-# Callback para mostrar/ocultar el panel de volatilidad
-@callback(
-    Output("volatility-panel", "style"),
-    [Input("toggle-volatility", "n_clicks"),
-     Input("close-volatility", "n_clicks")],
-    [State("volatility-panel", "style")],
-    prevent_initial_call=True
-)
-def toggle_volatility_panel(toggle_clicks, close_clicks, current_style):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        return current_style
-    
-    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    panel_visible = current_style.get("display") != "none"
-    
-    # Copiar el estilo para no modificar el original
-    new_style = dict(current_style)
-    
-    # Mostrar u ocultar según el botón pulsado
-    if button_id == "toggle-volatility":
-        new_style["display"] = "none" if panel_visible else "block"
-    elif button_id == "close-volatility":
-        new_style["display"] = "none"
-    
-    return new_style
-
-# Callback para mostrar/ocultar el panel de correlación
-@callback(
-    Output("correlation-panel", "style"),
-    [Input("toggle-correlation", "n_clicks"),
-     Input("close-correlation", "n_clicks")],
-    [State("correlation-panel", "style")],
-    prevent_initial_call=True
-)
-def toggle_correlation_panel(toggle_clicks, close_clicks, current_style):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        return current_style
-    
-    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    panel_visible = current_style.get("display") != "none"
-    
-    # Copiar el estilo para no modificar el original
-    new_style = dict(current_style)
-    
-    # Mostrar u ocultar según el botón pulsado
-    if button_id == "toggle-correlation":
-        new_style["display"] = "none" if panel_visible else "block"
-    elif button_id == "close-correlation":
-        new_style["display"] = "none"
-    
-    return new_style
-
-# Callback para cambiar entre tema claro/oscuro
-@callback(
-    Output("theme-toggle", "children"),
-    Output("trading-chart", "figure", allow_duplicate=True),
-    Output("correlation-chart", "figure"),
-    Input("theme-toggle", "n_clicks"),
-    State("theme-toggle", "children"),
-    State("trading-chart", "figure"),
-    State("correlation-chart", "figure"),
-    prevent_initial_call=True
-)
-def toggle_theme(n_clicks, children, main_figure, correlation_figure):
-    # Determinar el tema actual basado en el icono del botón
-    if not n_clicks:
-        return children, main_figure, correlation_figure
-    
-    # Comprobar el tipo de icono (sol = tema oscuro, luna = tema claro)
-    current_icon = children["props"]["className"]
-    is_dark_mode = "fa-sun" in current_icon
-    
-    # Cambiar el icono basado en el tema actual
-    new_icon = html.I(className="fas fa-moon" if is_dark_mode else "fas fa-sun")
-    
-    # Actualizar el tema de los gráficos
-    new_theme = "light" if is_dark_mode else "dark"
-    
-    # Actualizar colores y estilos de los gráficos según el tema
-    # Gráfico principal
-    main_figure["layout"]["template"] = "plotly_white" if new_theme == "light" else "plotly_dark"
-    main_figure["layout"]["paper_bgcolor"] = "#ffffff" if new_theme == "light" else "#131722"
-    main_figure["layout"]["plot_bgcolor"] = "#ffffff" if new_theme == "light" else "#131722"
-    
-    # Gráfico de correlación
-    correlation_figure["layout"]["template"] = "plotly_white" if new_theme == "light" else "plotly_dark"
-    correlation_figure["layout"]["paper_bgcolor"] = "#ffffff" if new_theme == "light" else "#131722"
-    correlation_figure["layout"]["plot_bgcolor"] = "#ffffff" if new_theme == "light" else "#131722"
-    
-    return new_icon, main_figure, correlation_figure
-
-# Callback para mostrar/ocultar el modal de noticias
-@callback(
-    Output("news-modal", "is_open"),
-    [Input("news-button", "n_clicks")],
-    [State("news-modal", "is_open")],
-    prevent_initial_call=True
-)
-def toggle_news_modal(n_clicks, is_open):
-    if n_clicks:
-        return not is_open
-    return is_open
-
-# Callback para activar/desactivar la actualización en tiempo real
-@callback(
-    Output("chart-interval", "disabled"),
-    [Input("real-time-update", "value")],
-    prevent_initial_call=True
-)
-def toggle_real_time_update(active):
-    return not active
-
-# Callback para actualizar el gráfico principal con todas las características avanzadas
-@callback(
-    [Output("trading-chart", "figure", allow_duplicate=True),
-     Output("ai-analysis-content", "children")],
-    [Input("load-data-button", "n_clicks"),
-     Input("chart-interval", "n_intervals"),
-     Input("tf-5m", "n_clicks"),
-     Input("tf-15m", "n_clicks"),
-     Input("tf-30m", "n_clicks"),
-     Input("tf-1h", "n_clicks"),
-     Input("tf-4h", "n_clicks"),
-     Input("tf-1d", "n_clicks")],
-    [State("exchange-selector-dropdown", "children"),
-     State("pair-display", "children"),
-     State("sma-20-checkbox", "value"),
-     State("sma-50-checkbox", "value"),
-     State("sma-200-checkbox", "value"),
-     State("ema-20-checkbox", "value"),
-     State("rsi-checkbox", "value"),
-     State("macd-checkbox", "value"),
-     State("bollinger-checkbox", "value"),
-     State("real-time-update", "value")],
-    prevent_initial_call=True
-)
-def update_analysis_chart(load_clicks, n_intervals, tf_5m, tf_15m, tf_30m, tf_1h, tf_4h, tf_1d, 
-                        exchange, pair, sma_20, sma_50, sma_200, ema_20, rsi, macd, bollinger, real_time):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        return create_advanced_analysis_chart(), generate_ai_analysis_content()
-    
-    button_id = ctx.triggered[0]["prop_id"].split(".")[0]
-    
-    timeframe = "1h"  # Valor predeterminado
-    if button_id == "tf-5m":
-        timeframe = "5m"
-    elif button_id == "tf-15m":
-        timeframe = "15m"
-    elif button_id == "tf-30m":
-        timeframe = "30m"
-    elif button_id == "tf-1h":
-        timeframe = "1h"
-    elif button_id == "tf-4h":
-        timeframe = "4h"
-    elif button_id == "tf-1d":
-        timeframe = "1d"
-    
-    # Aquí obtendrías los datos reales del mercado para el par seleccionado
-    # Por ahora usamos datos simulados
-    time.sleep(0.5)  # Simular tiempo de carga
-    
-    # Generar figura avanzada con análisis técnico
-    fig = create_advanced_analysis_chart(asset=pair, timeframe=timeframe, indicators={
-        'sma_20': sma_20,
-        'sma_50': sma_50,
-        'sma_200': sma_200,
-        'ema_20': ema_20,
-        'rsi': rsi,
-        'macd': macd,
-        'bollinger': bollinger
-    })
-    
-    # Generar contenido del análisis IA
-    ai_content = generate_ai_analysis_content(timeframe=timeframe, pair=pair)
-    
-    return fig, ai_content
-
-# Callback para actualizar el gráfico de volatilidad
-@callback(
-    Output("volatility-chart", "figure"),
-    [Input("toggle-volatility", "n_clicks"),
-     Input("tf-5m", "n_clicks"),
-     Input("tf-15m", "n_clicks"),
-     Input("tf-30m", "n_clicks"),
-     Input("tf-1h", "n_clicks"),
-     Input("tf-4h", "n_clicks"),
-     Input("tf-1d", "n_clicks")],
-    [State("pair-display", "children")],
-    prevent_initial_call=True
-)
-def update_volatility_chart(vol_clicks, tf_5m, tf_15m, tf_30m, tf_1h, tf_4h, tf_1d, pair):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        return create_empty_chart("volatilidad")
-    
-    # Determinar qué botón se ha pulsado
-    button_id = ctx.triggered[0]["prop_id"].split(".")[0]
-    
-    # Seleccionar el timeframe según el botón pulsado
-    timeframe = "1h"  # Valor predeterminado
-    if button_id == "tf-5m":
-        timeframe = "5m"
-    elif button_id == "tf-15m":
-        timeframe = "15m"
-    elif button_id == "tf-30m":
-        timeframe = "30m"
-    elif button_id == "tf-1h":
-        timeframe = "1h"
-    elif button_id == "tf-4h":
-        timeframe = "4h"
-    elif button_id == "tf-1d":
-        timeframe = "1d"
-    
-    # Aquí implementarías la lógica real para analizar la volatilidad
-    time.sleep(0.5)  # Simular tiempo de carga
-    
-    # Crear gráfico de volatilidad
-    fig = create_volatility_chart(timeframe=timeframe, pair=pair)
-    
-    return fig
 
 # La función generate_ai_analysis_content ya está implementada anteriormente en el archivo
 # en las líneas 603-737, por lo que eliminamos esta versión duplicada.
