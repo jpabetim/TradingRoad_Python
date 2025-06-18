@@ -1,0 +1,437 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}TradingRoad - Volatilidad{% endblock %}
+
+{% block page_title %}Análisis de Volatilidad{% endblock %}
+
+{% block head_extra %}
+<style>
+    .volatility-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .chart-container {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 0;
+        overflow: hidden;
+    }
+    
+    .chart-header {
+        padding: 10px 15px;
+        background-color: #252525;
+        border-bottom: 1px solid #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .chart {
+        width: 100%;
+        height: 300px;
+    }
+    
+    .correlation-heat-map {
+        width: 100%;
+        height: 400px;
+    }
+    
+    .data-table {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+    }
+    
+    .data-table th {
+        background-color: #252525;
+    }
+    
+    .positive-value {
+        color: #26a69a;
+    }
+    
+    .negative-value {
+        color: #ef5350;
+    }
+    
+    .neutral-value {
+        color: #ffb74d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Controles de selección -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-end">
+                    <div class="col-md-3 mb-3">
+                        <label for="volatility-period" class="form-label">Período de análisis</label>
+                        <select id="volatility-period" class="form-select">
+                            <option value="7">7 días</option>
+                            <option value="14" selected>14 días</option>
+                            <option value="30">30 días</option>
+                            <option value="90">90 días</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="volatility-assets" class="form-label">Activos a comparar</label>
+                        <select id="volatility-assets" class="form-select" multiple size="1">
+                            <option value="BTC" selected>Bitcoin (BTC)</option>
+                            <option value="ETH" selected>Ethereum (ETH)</option>
+                            <option value="SOL" selected>Solana (SOL)</option>
+                            <option value="XRP">Ripple (XRP)</option>
+                            <option value="ADA">Cardano (ADA)</option>
+                            <option value="DOT">Polkadot (DOT)</option>
+                            <option value="MATIC">Polygon (MATIC)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="volatility-calculation" class="form-label">Cálculo de volatilidad</label>
+                        <select id="volatility-calculation" class="form-select">
+                            <option value="standard" selected>Desviación estándar</option>
+                            <option value="atr">ATR (Average True Range)</option>
+                            <option value="bollinger">Bandas de Bollinger</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button id="update-volatility" class="btn btn-primary w-100">Actualizar análisis</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico de volatilidad histórica -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h5 class="mb-0">Volatilidad histórica</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="download-volatility-chart">
+                        <i class="bi bi-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
+            <div id="volatility-chart" class="chart"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Mapa de calor de correlación -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h5 class="mb-0">Matriz de correlación</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="download-correlation-map">
+                        <i class="bi bi-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
+            <div id="correlation-map" class="correlation-heat-map"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de métricas de volatilidad -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Métricas de volatilidad</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="download-metrics-csv">
+                        <i class="bi bi-file-earmark-excel"></i> Exportar CSV
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover data-table">
+                        <thead>
+                            <tr>
+                                <th>Activo</th>
+                                <th>Vol. diaria</th>
+                                <th>Vol. semanal</th>
+                                <th>Vol. mensual</th>
+                                <th>ATR (14)</th>
+                                <th>Ancho BB %</th>
+                                <th>Tendencia vol.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="volatility-metrics">
+                            <tr>
+                                <td>Bitcoin (BTC)</td>
+                                <td class="neutral-value">1.78%</td>
+                                <td class="neutral-value">2.45%</td>
+                                <td class="positive-value">3.82%</td>
+                                <td>1245.67</td>
+                                <td>4.23%</td>
+                                <td><i class="bi bi-arrow-up-right text-success"></i> En aumento</td>
+                            </tr>
+                            <tr>
+                                <td>Ethereum (ETH)</td>
+                                <td class="negative-value">2.34%</td>
+                                <td class="negative-value">3.67%</td>
+                                <td class="negative-value">5.12%</td>
+                                <td>98.45</td>
+                                <td>5.87%</td>
+                                <td><i class="bi bi-arrow-up-right text-success"></i> En aumento</td>
+                            </tr>
+                            <tr>
+                                <td>Solana (SOL)</td>
+                                <td class="negative-value">3.12%</td>
+                                <td class="negative-value">4.89%</td>
+                                <td class="negative-value">7.23%</td>
+                                <td>3.45</td>
+                                <td>8.12%</td>
+                                <td><i class="bi bi-arrow-down-right text-danger"></i> En descenso</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Referencias a elementos DOM
+    const periodSelect = document.getElementById('volatility-period');
+    const assetsSelect = document.getElementById('volatility-assets');
+    const calculationSelect = document.getElementById('volatility-calculation');
+    const updateButton = document.getElementById('update-volatility');
+    
+    // Inicialización del selector múltiple con Bootstrap multiselect
+    $(document).ready(function() {
+        $('#volatility-assets').selectpicker({
+            actionsBox: true,
+            selectedTextFormat: 'count > 2'
+        });
+    });
+    
+    // Crear gráfico de volatilidad histórica con Chart.js
+    function createVolatilityChart() {
+        const ctx = document.getElementById('volatility-chart').getContext('2d');
+        
+        const volatilityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 30}, (_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - (29 - i));
+                    return date.toLocaleDateString('es-ES', {day: '2-digit', month: 'short'});
+                }),
+                datasets: [
+                    {
+                        label: 'BTC Volatilidad',
+                        data: generateRandomData(30, 1.5, 3.5),
+                        borderColor: '#f9a825',
+                        backgroundColor: 'rgba(249, 168, 37, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'ETH Volatilidad',
+                        data: generateRandomData(30, 2, 5),
+                        borderColor: '#42a5f5',
+                        backgroundColor: 'rgba(66, 165, 245, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'SOL Volatilidad',
+                        data: generateRandomData(30, 2.5, 7),
+                        borderColor: '#9c27b0',
+                        backgroundColor: 'rgba(156, 39, 176, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e0e0e0'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e0e0e0',
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Volatilidad (%)',
+                            color: '#e0e0e0'
+                        }
+                    }
+                }
+            }
+        });
+        
+        return volatilityChart;
+    }
+    
+    // Crear mapa de calor de correlación con D3.js
+    function createCorrelationMap() {
+        // Datos de ejemplo para la matriz de correlación
+        const assets = ['BTC', 'ETH', 'SOL', 'XRP', 'ADA', 'DOT', 'MATIC'];
+        const correlationMatrix = [
+            [1.00, 0.82, 0.76, 0.65, 0.58, 0.71, 0.69],
+            [0.82, 1.00, 0.85, 0.71, 0.68, 0.79, 0.76],
+            [0.76, 0.85, 1.00, 0.67, 0.72, 0.80, 0.75],
+            [0.65, 0.71, 0.67, 1.00, 0.77, 0.62, 0.59],
+            [0.58, 0.68, 0.72, 0.77, 1.00, 0.70, 0.65],
+            [0.71, 0.79, 0.80, 0.62, 0.70, 1.00, 0.81],
+            [0.69, 0.76, 0.75, 0.59, 0.65, 0.81, 1.00]
+        ];
+        
+        // Configuración del mapa de calor
+        const container = d3.select('#correlation-map');
+        container.html(''); // Limpiar contenedor
+        
+        const margin = {top: 50, right: 70, bottom: 70, left: 70};
+        const width = container.node().clientWidth - margin.left - margin.right;
+        const height = container.node().clientHeight - margin.top - margin.bottom;
+        
+        // Crear el SVG
+        const svg = container.append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+        
+        // Escalas para filas y columnas
+        const x = d3.scaleBand()
+            .range([0, width])
+            .domain(assets)
+            .padding(0.05);
+            
+        const y = d3.scaleBand()
+            .range([0, height])
+            .domain(assets)
+            .padding(0.05);
+            
+        // Escala para el color
+        const colorScale = d3.scaleLinear()
+            .domain([-1, 0, 1])
+            .range(['#ef5350', '#424242', '#26a69a']);
+            
+        // Añadir ejes X e Y
+        svg.append('g')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll('text')
+            .style('fill', '#e0e0e0');
+            
+        svg.append('g')
+            .call(d3.axisLeft(y))
+            .selectAll('text')
+            .style('fill', '#e0e0e0');
+            
+        // Crear las celdas del mapa de calor
+        for (let i = 0; i < assets.length; i++) {
+            for (let j = 0; j < assets.length; j++) {
+                svg.append('rect')
+                    .attr('x', x(assets[j]))
+                    .attr('y', y(assets[i]))
+                    .attr('width', x.bandwidth())
+                    .attr('height', y.bandwidth())
+                    .style('fill', colorScale(correlationMatrix[i][j]));
+                    
+                svg.append('text')
+                    .attr('x', x(assets[j]) + x.bandwidth() / 2)
+                    .attr('y', y(assets[i]) + y.bandwidth() / 2)
+                    .attr('text-anchor', 'middle')
+                    .attr('dominant-baseline', 'central')
+                    .style('fill', correlationMatrix[i][j] > 0.7 || correlationMatrix[i][j] < 0.3 ? 'white' : 'black')
+                    .text(correlationMatrix[i][j].toFixed(2));
+            }
+        }
+        
+        // Añadir título
+        svg.append('text')
+            .attr('x', width / 2)
+            .attr('y', -20)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('fill', '#e0e0e0')
+            .text('Matriz de correlación entre activos');
+    }
+    
+    // Función para generar datos aleatorios para el ejemplo
+    function generateRandomData(length, min, max) {
+        return Array.from({length}, () => min + Math.random() * (max - min));
+    }
+    
+    // Cargar datos desde la API
+    async function loadVolatilityData() {
+        const period = periodSelect.value;
+        const assets = Array.from($('#volatility-assets').val());
+        const calculation = calculationSelect.value;
+        
+        try {
+            // En una implementación real, se haría una llamada a la API
+            // Aquí simularemos una espera y actualización de la UI
+            
+            // Actualizar tabla de métricas (simulado)
+            setTimeout(() => {
+                // En producción, esta información vendría de la API
+                createVolatilityChart();
+                createCorrelationMap();
+            }, 500);
+            
+        } catch (error) {
+            console.error('Error al cargar datos de volatilidad:', error);
+        }
+    }
+    
+    // Event listeners
+    updateButton.addEventListener('click', loadVolatilityData);
+    
+    // Inicialización
+    createVolatilityChart();
+    createCorrelationMap();
+});
+</script>
+{% endblock %}

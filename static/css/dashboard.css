@@ -1,0 +1,88 @@
+/* Estilos personalizados para el dashboard de TradingRoad */
+
+/* Variables de colores */
+:root {
+  --bg-dark: #121212;
+  --bg-card: #1e1e1e;
+  --bg-header: #252525;
+  --border-color: #333;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --primary: #007bff;
+  --success: #26a69a;
+  --danger: #ef5350;
+  --warning: #ffb74d;
+  --info: #42a5f5;
+}
+
+/* Estilos generales */
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Personalización de componentes comunes */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.btn:focus, .form-control:focus, .form-select:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+
+/* Estilos específicos para gráficos */
+.chart-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+/* Personalización para tablas */
+.table {
+  color: var(--text-primary);
+}
+
+.table-dark {
+  background-color: var(--bg-card);
+}
+
+.table-dark th {
+  background-color: var(--bg-header);
+}
+
+/* Animación para las carga de datos */
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.loading-animation {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Estilos para móviles */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .card-body {
+    padding: 0.75rem;
+  }
+}

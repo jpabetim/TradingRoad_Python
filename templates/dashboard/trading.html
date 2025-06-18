@@ -1,0 +1,434 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}TradingRoad - Trading{% endblock %}
+
+{% block page_title %}Trading{% endblock %}
+
+{% block head_extra %}
+<style>
+    .chart-container {
+        width: 100%;
+        height: calc(100vh - 200px);
+        min-height: 500px;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .chart-toolbar {
+        padding: 10px;
+        background-color: #252525;
+        border-radius: 8px 8px 0 0;
+        border-bottom: 1px solid #333;
+    }
+    
+    .indicator-controls {
+        background-color: #1e1e1e;
+        border-radius: 0 0 8px 8px;
+        padding: 10px;
+        border-top: 1px solid #333;
+    }
+    
+    #trading-chart {
+        width: 100%;
+        height: calc(100% - 110px);
+        background-color: #121212;
+    }
+    
+    .form-select, .form-control {
+        background-color: #252525;
+        border-color: #333;
+        color: #e0e0e0;
+    }
+    
+    .form-select:focus, .form-control:focus {
+        background-color: #2a2a2a;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="chart-container">
+                    <div class="chart-toolbar d-flex flex-wrap justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <select id="exchange-select" class="form-select form-select-sm">
+                                    <option value="binance">Binance</option>
+                                    <option value="kucoin">KuCoin</option>
+                                    <option value="coinbase">Coinbase</option>
+                                    <option value="bybit">Bybit</option>
+                                </select>
+                            </div>
+                            <div class="me-3">
+                                <select id="symbol-select" class="form-select form-select-sm">
+                                    <option value="BTC/USDT">BTC/USDT</option>
+                                    <option value="ETH/USDT">ETH/USDT</option>
+                                    <option value="SOL/USDT">SOL/USDT</option>
+                                    <option value="XRP/USDT">XRP/USDT</option>
+                                    <option value="ADA/USDT">ADA/USDT</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select id="timeframe-select" class="form-select form-select-sm">
+                                    <option value="1m">1 minuto</option>
+                                    <option value="5m">5 minutos</option>
+                                    <option value="15m">15 minutos</option>
+                                    <option value="30m">30 minutos</option>
+                                    <option value="1h" selected>1 hora</option>
+                                    <option value="4h">4 horas</option>
+                                    <option value="1d">1 día</option>
+                                    <option value="1w">1 semana</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <button id="add-indicator-btn" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="bi bi-plus-circle"></i> Añadir Indicador
+                            </button>
+                            <button id="toggle-drawing-btn" class="btn btn-sm btn-outline-secondary me-2">
+                                <i class="bi bi-pencil"></i> Dibujar
+                            </button>
+                            <div class="form-check form-switch d-flex align-items-center ms-2">
+                                <input class="form-check-input" type="checkbox" id="realtime-update-toggle" checked>
+                                <label class="form-check-label ms-2" for="realtime-update-toggle">Actualización en tiempo real</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="trading-chart">
+                        <!-- El gráfico se cargará aquí -->
+                    </div>
+                    
+                    <div class="indicator-controls">
+                        <div class="row" id="active-indicators">
+                            <!-- Los indicadores activos se mostrarán aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para añadir indicador -->
+<div class="modal fade" id="add-indicator-modal" tabindex="-1" aria-labelledby="add-indicator-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add-indicator-label">Añadir Indicador</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="indicator-type" class="form-label">Tipo de Indicador</label>
+                    <select class="form-select" id="indicator-type">
+                        <option value="sma">SMA - Media Móvil Simple</option>
+                        <option value="ema">EMA - Media Móvil Exponencial</option>
+                        <option value="bollinger">Bandas de Bollinger</option>
+                        <option value="rsi">RSI - Índice de Fuerza Relativa</option>
+                        <option value="macd">MACD</option>
+                        <option value="stochastic">Estocástico</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="indicator-period" class="form-label">Período</label>
+                    <input type="number" class="form-control" id="indicator-period" value="14" min="1" max="200">
+                </div>
+                <div id="indicator-extra-params">
+                    <!-- Parámetros adicionales según el indicador -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="add-indicator-confirm">Añadir</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Referencias a elementos DOM
+    const chartContainer = document.getElementById('trading-chart');
+    const exchangeSelect = document.getElementById('exchange-select');
+    const symbolSelect = document.getElementById('symbol-select');
+    const timeframeSelect = document.getElementById('timeframe-select');
+    const realtimeToggle = document.getElementById('realtime-update-toggle');
+    const addIndicatorBtn = document.getElementById('add-indicator-btn');
+    const toggleDrawingBtn = document.getElementById('toggle-drawing-btn');
+    
+    // Variables para el gráfico
+    let chart;
+    let candleSeries;
+    let indicators = [];
+    let updateInterval;
+    const updateFrequency = 15000; // 15 segundos
+    
+    // Creación del gráfico con Lightweight Charts
+    function createChart() {
+        chart = LightweightCharts.createChart(chartContainer, {
+            layout: {
+                background: { color: '#121212' },
+                textColor: '#d1d1d1',
+            },
+            grid: {
+                vertLines: { color: '#1e1e1e' },
+                horzLines: { color: '#1e1e1e' },
+            },
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal,
+                vertLine: {
+                    color: '#505050',
+                    width: 1,
+                    style: LightweightCharts.LineStyle.Dashed,
+                },
+                horzLine: {
+                    color: '#505050',
+                    width: 1,
+                    style: LightweightCharts.LineStyle.Dashed,
+                },
+            },
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false,
+                borderColor: '#333',
+            },
+            rightPriceScale: {
+                borderColor: '#333',
+            },
+        });
+
+        candleSeries = chart.addCandlestickSeries({
+            upColor: '#26a69a',
+            downColor: '#ef5350',
+            borderUpColor: '#26a69a',
+            borderDownColor: '#ef5350',
+            wickUpColor: 'rgba(38, 166, 154, 0.5)',
+            wickDownColor: 'rgba(239, 83, 80, 0.5)',
+        });
+
+        // Responsive
+        window.addEventListener('resize', () => {
+            chart.applyOptions({
+                width: chartContainer.clientWidth,
+                height: chartContainer.clientHeight,
+            });
+        });
+
+        // Aplicar dimensiones iniciales
+        chart.applyOptions({
+            width: chartContainer.clientWidth,
+            height: chartContainer.clientHeight,
+        });
+    }
+    
+    // Cargar datos del gráfico
+    async function loadChartData() {
+        const exchange = exchangeSelect.value;
+        const symbol = symbolSelect.value;
+        const timeframe = timeframeSelect.value;
+        
+        try {
+            const response = await fetch(`/api/v1/klines?exchange=${exchange}&symbol=${symbol}&interval=${timeframe}`);
+            const data = await response.json();
+            
+            // Formatear datos para el gráfico
+            const formattedData = data.map(candle => ({
+                time: candle.time / 1000, // Convertir milisegundos a segundos (formato de Lightweight Charts)
+                open: parseFloat(candle.open),
+                high: parseFloat(candle.high),
+                low: parseFloat(candle.low),
+                close: parseFloat(candle.close)
+            }));
+            
+            candleSeries.setData(formattedData);
+            
+            // Actualizar indicadores
+            updateIndicators();
+        } catch (error) {
+            console.error('Error al cargar datos del gráfico:', error);
+        }
+    }
+    
+    // Iniciar actualización en tiempo real
+    function startRealtimeUpdates() {
+        if (updateInterval) clearInterval(updateInterval);
+        
+        if (realtimeToggle.checked) {
+            updateInterval = setInterval(async () => {
+                const exchange = exchangeSelect.value;
+                const symbol = symbolSelect.value;
+                const timeframe = timeframeSelect.value;
+                
+                try {
+                    // Obtenemos solo la última vela
+                    const response = await fetch(`/api/v1/klines?exchange=${exchange}&symbol=${symbol}&interval=${timeframe}&limit=1`);
+                    const data = await response.json();
+                    
+                    if (data && data.length > 0) {
+                        const lastCandle = {
+                            time: data[0].time / 1000,
+                            open: parseFloat(data[0].open),
+                            high: parseFloat(data[0].high),
+                            low: parseFloat(data[0].low),
+                            close: parseFloat(data[0].close)
+                        };
+                        
+                        candleSeries.update(lastCandle);
+                        updateIndicators();
+                    }
+                } catch (error) {
+                    console.error('Error al actualizar datos en tiempo real:', error);
+                }
+            }, updateFrequency);
+        }
+    }
+    
+    // Función para añadir indicadores
+    function addIndicator(type, params) {
+        // Implementación básica - se expandirá según los indicadores soportados
+        switch(type) {
+            case 'sma':
+                const smaSeries = chart.addLineSeries({
+                    color: params.color || 'rgba(38, 166, 154, 0.7)',
+                    lineWidth: 2,
+                    title: `SMA(${params.period})`,
+                });
+                indicators.push({
+                    type: 'sma',
+                    series: smaSeries,
+                    params: params
+                });
+                updateIndicator(indicators[indicators.length - 1]);
+                break;
+            // Otros indicadores se implementarán de manera similar
+        }
+        
+        // Actualizar la UI para mostrar el indicador añadido
+        updateIndicatorUI();
+    }
+    
+    // Actualizar un indicador específico
+    async function updateIndicator(indicator) {
+        const exchange = exchangeSelect.value;
+        const symbol = symbolSelect.value;
+        const timeframe = timeframeSelect.value;
+        
+        try {
+            // Llamada a la API para obtener datos del indicador
+            const response = await fetch(`/api/v1/indicators?exchange=${exchange}&symbol=${symbol}&interval=${timeframe}&type=${indicator.type}&period=${indicator.params.period}`);
+            const data = await response.json();
+            
+            // Formatear datos para el gráfico
+            const formattedData = data.map(point => ({
+                time: point.time / 1000,
+                value: parseFloat(point.value)
+            }));
+            
+            indicator.series.setData(formattedData);
+        } catch (error) {
+            console.error(`Error al actualizar indicador ${indicator.type}:`, error);
+        }
+    }
+    
+    // Actualizar todos los indicadores
+    function updateIndicators() {
+        indicators.forEach(indicator => updateIndicator(indicator));
+    }
+    
+    // Actualizar la interfaz de usuario de indicadores
+    function updateIndicatorUI() {
+        const activeIndicatorsDiv = document.getElementById('active-indicators');
+        activeIndicatorsDiv.innerHTML = '';
+        
+        indicators.forEach((indicator, index) => {
+            const indicatorElement = document.createElement('div');
+            indicatorElement.className = 'col-md-auto mb-2';
+            indicatorElement.innerHTML = `
+                <div class="badge bg-dark text-light border border-secondary px-3 py-2">
+                    ${indicator.type.toUpperCase()}(${indicator.params.period})
+                    <button class="btn btn-sm btn-close btn-close-white ms-2" data-indicator-index="${index}"></button>
+                </div>
+            `;
+            activeIndicatorsDiv.appendChild(indicatorElement);
+        });
+        
+        // Agregar event listeners a los botones de eliminar
+        document.querySelectorAll('#active-indicators .btn-close').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = parseInt(this.getAttribute('data-indicator-index'));
+                removeIndicator(index);
+            });
+        });
+    }
+    
+    // Eliminar un indicador
+    function removeIndicator(index) {
+        if (index >= 0 && index < indicators.length) {
+            chart.removeSeries(indicators[index].series);
+            indicators.splice(index, 1);
+            updateIndicatorUI();
+        }
+    }
+    
+    // Event listeners
+    exchangeSelect.addEventListener('change', loadChartData);
+    symbolSelect.addEventListener('change', loadChartData);
+    timeframeSelect.addEventListener('change', loadChartData);
+    realtimeToggle.addEventListener('change', startRealtimeUpdates);
+    
+    addIndicatorBtn.addEventListener('click', function() {
+        // Abrir modal para añadir indicador
+        const modal = new bootstrap.Modal(document.getElementById('add-indicator-modal'));
+        modal.show();
+    });
+    
+    document.getElementById('add-indicator-confirm').addEventListener('click', function() {
+        const type = document.getElementById('indicator-type').value;
+        const period = parseInt(document.getElementById('indicator-period').value);
+        
+        // Añadir el indicador
+        addIndicator(type, {
+            period: period,
+            color: getRandomColor()
+        });
+        
+        // Cerrar el modal
+        bootstrap.Modal.getInstance(document.getElementById('add-indicator-modal')).hide();
+    });
+    
+    toggleDrawingBtn.addEventListener('click', function() {
+        // Implementar modo de dibujo
+        this.classList.toggle('btn-primary');
+        this.classList.toggle('btn-outline-secondary');
+    });
+    
+    // Función para generar colores aleatorios para indicadores
+    function getRandomColor() {
+        const colors = [
+            'rgba(38, 166, 154, 0.7)',
+            'rgba(239, 83, 80, 0.7)',
+            'rgba(255, 193, 7, 0.7)',
+            'rgba(33, 150, 243, 0.7)',
+            'rgba(156, 39, 176, 0.7)',
+            'rgba(76, 175, 80, 0.7)',
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+    
+    // Inicialización
+    createChart();
+    loadChartData();
+    startRealtimeUpdates();
+});
+</script>
+{% endblock %}

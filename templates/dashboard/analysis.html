@@ -1,0 +1,396 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}TradingRoad - Análisis Técnico{% endblock %}
+
+{% block page_title %}Análisis Técnico{% endblock %}
+
+{% block head_extra %}
+<style>
+    .analysis-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 200px);
+        min-height: 500px;
+    }
+    
+    .chart-row {
+        display: flex;
+        flex: 1;
+    }
+    
+    .chart-container {
+        flex: 1;
+        margin: 5px;
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .chart {
+        width: 100%;
+        height: 100%;
+        min-height: 250px;
+    }
+    
+    .chart-header {
+        padding: 8px;
+        background-color: #252525;
+        border-bottom: 1px solid #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .indicator-selector {
+        background-color: #1e1e1e;
+        border-radius: 0 0 8px 8px;
+        padding: 10px;
+        border-top: 1px solid #333;
+    }
+    
+    @media (max-width: 767.98px) {
+        .chart-row {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Controles principales -->
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex flex-wrap">
+                            <div class="me-3 mb-2">
+                                <label for="analysis-exchange" class="form-label">Exchange</label>
+                                <select id="analysis-exchange" class="form-select form-select-sm">
+                                    <option value="binance">Binance</option>
+                                    <option value="kucoin">KuCoin</option>
+                                    <option value="coinbase">Coinbase</option>
+                                    <option value="bybit">Bybit</option>
+                                </select>
+                            </div>
+                            <div class="me-3 mb-2">
+                                <label for="analysis-symbol" class="form-label">Par</label>
+                                <select id="analysis-symbol" class="form-select form-select-sm">
+                                    <option value="BTC/USDT">BTC/USDT</option>
+                                    <option value="ETH/USDT">ETH/USDT</option>
+                                    <option value="SOL/USDT">SOL/USDT</option>
+                                    <option value="XRP/USDT">XRP/USDT</option>
+                                    <option value="ADA/USDT">ADA/USDT</option>
+                                </select>
+                            </div>
+                            <div class="me-3 mb-2">
+                                <label for="analysis-timeframe" class="form-label">Intervalo</label>
+                                <select id="analysis-timeframe" class="form-select form-select-sm">
+                                    <option value="1h">1 hora</option>
+                                    <option value="4h">4 horas</option>
+                                    <option value="1d" selected>1 día</option>
+                                    <option value="1w">1 semana</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button id="add-chart-btn" class="btn btn-primary btn-sm me-2">
+                            <i class="bi bi-plus-circle"></i> Añadir Gráfico
+                        </button>
+                        <button id="save-layout-btn" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-save"></i> Guardar Diseño
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor principal para los gráficos -->
+<div class="analysis-container">
+    <div class="chart-row">
+        <div class="chart-container">
+            <div class="chart-header">
+                <span>Precio (velas)</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="price-chart" class="chart"></div>
+        </div>
+    </div>
+    <div class="chart-row">
+        <div class="chart-container">
+            <div class="chart-header">
+                <span>Volumen</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="volume-chart" class="chart"></div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-header">
+                <span>Indicadores</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="#" data-indicator="rsi">RSI</a></li>
+                        <li><a class="dropdown-item" href="#" data-indicator="macd">MACD</a></li>
+                        <li><a class="dropdown-item" href="#" data-indicator="stochastic">Estocástico</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="indicator-chart" class="chart"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Referencias a elementos DOM
+    const exchangeSelect = document.getElementById('analysis-exchange');
+    const symbolSelect = document.getElementById('analysis-symbol');
+    const timeframeSelect = document.getElementById('analysis-timeframe');
+    const addChartBtn = document.getElementById('add-chart-btn');
+    const saveLayoutBtn = document.getElementById('save-layout-btn');
+    
+    // Variables para los gráficos
+    let priceChart, volumeChart, indicatorChart;
+    let candleSeries, volumeSeries;
+    
+    // Crear los gráficos principales
+    function createCharts() {
+        // Gráfico de precios (velas)
+        priceChart = LightweightCharts.createChart(document.getElementById('price-chart'), {
+            layout: {
+                background: { color: '#121212' },
+                textColor: '#d1d1d1',
+            },
+            grid: {
+                vertLines: { color: '#1e1e1e' },
+                horzLines: { color: '#1e1e1e' },
+            },
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal,
+            },
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false,
+                borderColor: '#333',
+            },
+            rightPriceScale: {
+                borderColor: '#333',
+            },
+        });
+        
+        candleSeries = priceChart.addCandlestickSeries({
+            upColor: '#26a69a',
+            downColor: '#ef5350',
+            borderUpColor: '#26a69a',
+            borderDownColor: '#ef5350',
+            wickUpColor: 'rgba(38, 166, 154, 0.5)',
+            wickDownColor: 'rgba(239, 83, 80, 0.5)',
+        });
+        
+        // Gráfico de volumen
+        volumeChart = LightweightCharts.createChart(document.getElementById('volume-chart'), {
+            layout: {
+                background: { color: '#121212' },
+                textColor: '#d1d1d1',
+            },
+            grid: {
+                vertLines: { color: '#1e1e1e' },
+                horzLines: { color: '#1e1e1e' },
+            },
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal,
+            },
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false,
+                borderColor: '#333',
+            },
+            rightPriceScale: {
+                borderColor: '#333',
+            },
+        });
+        
+        volumeSeries = volumeChart.addHistogramSeries({
+            color: '#26a69a',
+            priceFormat: {
+                type: 'volume',
+            },
+            priceScaleId: '',
+        });
+        
+        // Sincronizar movimiento horizontal entre gráficos
+        priceChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+            volumeChart.timeScale().setVisibleLogicalRange(range);
+            if (indicatorChart) {
+                indicatorChart.timeScale().setVisibleLogicalRange(range);
+            }
+        });
+        
+        // Gráfico para indicadores
+        indicatorChart = LightweightCharts.createChart(document.getElementById('indicator-chart'), {
+            layout: {
+                background: { color: '#121212' },
+                textColor: '#d1d1d1',
+            },
+            grid: {
+                vertLines: { color: '#1e1e1e' },
+                horzLines: { color: '#1e1e1e' },
+            },
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal,
+            },
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false,
+                borderColor: '#333',
+            },
+            rightPriceScale: {
+                borderColor: '#333',
+            },
+        });
+        
+        // Hacer los gráficos responsivos
+        window.addEventListener('resize', () => {
+            const priceChartElement = document.getElementById('price-chart');
+            const volumeChartElement = document.getElementById('volume-chart');
+            const indicatorChartElement = document.getElementById('indicator-chart');
+            
+            if (priceChartElement && priceChart) {
+                priceChart.applyOptions({
+                    width: priceChartElement.clientWidth,
+                    height: priceChartElement.clientHeight,
+                });
+            }
+            
+            if (volumeChartElement && volumeChart) {
+                volumeChart.applyOptions({
+                    width: volumeChartElement.clientWidth,
+                    height: volumeChartElement.clientHeight,
+                });
+            }
+            
+            if (indicatorChartElement && indicatorChart) {
+                indicatorChart.applyOptions({
+                    width: indicatorChartElement.clientWidth,
+                    height: indicatorChartElement.clientHeight,
+                });
+            }
+        });
+        
+        // Aplicar dimensiones iniciales
+        setTimeout(() => {
+            const priceChartElement = document.getElementById('price-chart');
+            const volumeChartElement = document.getElementById('volume-chart');
+            const indicatorChartElement = document.getElementById('indicator-chart');
+            
+            if (priceChartElement && priceChart) {
+                priceChart.applyOptions({
+                    width: priceChartElement.clientWidth,
+                    height: priceChartElement.clientHeight,
+                });
+            }
+            
+            if (volumeChartElement && volumeChart) {
+                volumeChart.applyOptions({
+                    width: volumeChartElement.clientWidth,
+                    height: volumeChartElement.clientHeight,
+                });
+            }
+            
+            if (indicatorChartElement && indicatorChart) {
+                indicatorChart.applyOptions({
+                    width: indicatorChartElement.clientWidth,
+                    height: indicatorChartElement.clientHeight,
+                });
+            }
+        }, 100);
+    }
+    
+    // Cargar datos para los gráficos
+    async function loadChartData() {
+        const exchange = exchangeSelect.value;
+        const symbol = symbolSelect.value;
+        const timeframe = timeframeSelect.value;
+        
+        try {
+            const response = await fetch(`/api/v1/klines?exchange=${exchange}&symbol=${symbol}&interval=${timeframe}`);
+            const data = await response.json();
+            
+            // Formatear datos para el gráfico de velas
+            const candleData = data.map(candle => ({
+                time: candle.time / 1000,
+                open: parseFloat(candle.open),
+                high: parseFloat(candle.high),
+                low: parseFloat(candle.low),
+                close: parseFloat(candle.close)
+            }));
+            
+            // Formatear datos para el gráfico de volumen
+            const volumeData = data.map(candle => ({
+                time: candle.time / 1000,
+                value: parseFloat(candle.volume),
+                color: parseFloat(candle.close) > parseFloat(candle.open) ? '#26a69a' : '#ef5350'
+            }));
+            
+            candleSeries.setData(candleData);
+            volumeSeries.setData(volumeData);
+            
+        } catch (error) {
+            console.error('Error al cargar datos:', error);
+        }
+    }
+    
+    // Añadir un indicador al gráfico correspondiente
+    function addIndicator(type, params) {
+        // Implementación básica - a expandir según sea necesario
+        switch(type) {
+            case 'rsi':
+                // Lógica para añadir RSI al gráfico de indicadores
+                break;
+            case 'macd':
+                // Lógica para añadir MACD al gráfico de indicadores
+                break;
+            case 'stochastic':
+                // Lógica para añadir Estocástico al gráfico de indicadores
+                break;
+        }
+    }
+    
+    // Event listeners
+    exchangeSelect.addEventListener('change', loadChartData);
+    symbolSelect.addEventListener('change', loadChartData);
+    timeframeSelect.addEventListener('change', loadChartData);
+    
+    // Listeners para botones del menú de indicadores
+    document.querySelectorAll('[data-indicator]').forEach(item => {
+        item.addEventListener('click', event => {
+            const indicatorType = event.target.getAttribute('data-indicator');
+            addIndicator(indicatorType, { period: 14 });
+        });
+    });
+    
+    // Inicialización
+    createCharts();
+    loadChartData();
+});
+</script>
+{% endblock %}

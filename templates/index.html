@@ -1,168 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradingRoad - Plataforma de Trading</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
-    <!-- Estilos personalizados -->
-    <link href="{{ url_for('static', path='/css/style.css') }}" rel="stylesheet">
-    
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', path='/img/favicon.ico') }}">
-    
-    <style>
-        body {
-            background-color: #121212;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .navbar {
-            background-color: #1e1e1e !important;
-            border-bottom: 1px solid #333;
-        }
-        .footer {
-            background-color: #1e1e1e;
-            padding: 20px 0;
-            margin-top: 40px;
-            border-top: 1px solid #333;
-            text-align: center;
-        }
-        .card {
-            background-color: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .card-header {
-            background-color: #252525;
-            border-bottom: 1px solid #333;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .btn-primary:hover {
-            background-color: #0069d9;
-            border-color: #0062cc;
-        }
-        .jumbotron {
-            background-color: #252525;
-            border-radius: 8px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #007bff;
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-graph-up-arrow"></i> TradingRoad
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dashboard/">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dashboard/trading">Trading</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dashboard/analysis">Análisis</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/api/docs">API Docs</a>
-                    </li>
-                </ul>
-                <div class="d-flex">
-                    <a href="/api/v1/auth/login_form" class="btn btn-outline-light me-2">Iniciar Sesión</a>
-                    <a href="/api/v1/auth/register" class="btn btn-primary">Registrarse</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
-    <div class="container mt-4">
-        <div class="jumbotron">
-            <h1 class="display-4">TradingRoad</h1>
-            <p class="lead">Plataforma avanzada de trading con análisis en tiempo real, conexión a múltiples exchanges y análisis con inteligencia artificial.</p>
-            <hr class="my-4">
-            <p>Accede a tu dashboard para comenzar a operar o explorar los mercados.</p>
-            <div class="d-flex gap-2">
-                <a class="btn btn-primary btn-lg" href="/dashboard/" role="button">Ir al Dashboard</a>
-                <a class="btn btn-success btn-lg" href="/analysis/tradingview" role="button">
-                    <i class="bi bi-graph-up"></i> TradingView Charts
-                </a>
-            </div>
-        </div>
+{% block title %}TradingRoad - Plataforma de Trading{% endblock %}
 
-        <div class="row mt-5">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <div class="feature-icon">
-                            <i class="bi bi-bar-chart-line"></i>
-                        </div>
-                        <h5 class="card-title">Trading en tiempo real</h5>
-                        <p class="card-text">Conecta con múltiples exchanges y opera en tiempo real con una interfaz avanzada e intuitiva.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <div class="feature-icon">
-                            <i class="bi bi-graph-up"></i>
-                        </div>
-                        <h5 class="card-title">Análisis técnico</h5>
-                        <p class="card-text">Accede a indicadores avanzados y visualiza datos históricos para tomar las mejores decisiones.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <div class="feature-icon">
-                            <i class="bi bi-cpu"></i>
-                        </div>
-                        <h5 class="card-title">Análisis con IA</h5>
-                        <p class="card-text">Aprovecha el poder de la inteligencia artificial para obtener insights sobre los mercados.</p>
-                    </div>
-                </div>
-            </div>
+{% block content %}
+<div class="container mt-4">
+    <div class="jumbotron bg-dark p-5 rounded">
+        <h1 class="display-4">TradingRoad</h1>
+        <p class="lead">Plataforma avanzada de trading con análisis en tiempo real, conexión a múltiples exchanges y análisis con inteligencia artificial.</p>
+        <hr class="my-4">
+        <p>Controla tus inversiones, automatiza estrategias y analiza los mercados con herramientas profesionales.</p>
+        <div class="mt-4">
+            <a class="btn btn-primary btn-lg" href="/register" role="button">Registrarme</a>
+            <a class="btn btn-outline-light btn-lg ms-2" href="/login" role="button">Iniciar sesión</a>
         </div>
-
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Últimas actualizaciones</h5>
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush bg-transparent">
-                            <li class="list-group-item bg-transparent">🚀 Nueva plataforma TradingRoad lanzada</li>
-                            <li class="list-group-item bg-transparent">📊 Integración con múltiples exchanges</li>
-                            <li class="list-group-item bg-transparent">🤖 Análisis avanzado con Gemini AI</li>
-                            <li class="list-group-item bg-transparent">📱 Interfaz adaptada para dispositivos móviles</li>
-                        </ul>
                     </div>
                 </div>
             </div>
@@ -185,5 +35,4 @@
     
     <!-- JavaScript personalizado -->
     <script src="{{ url_for('static', path='/js/main.js') }}"></script>
-</body>
-</html>
+{% endblock %}

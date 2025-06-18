@@ -1,0 +1,266 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}TradingRoad - Noticias{% endblock %}
+
+{% block page_title %}Noticias y Calendario Económico{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Últimas Noticias</h5>
+                <div>
+                    <select id="news-filter" class="form-select form-select-sm">
+                        <option value="all" selected>Todas las categorías</option>
+                        <option value="crypto">Criptomonedas</option>
+                        <option value="forex">Forex</option>
+                        <option value="stocks">Acciones</option>
+                        <option value="economy">Economía</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="news-loading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando noticias...</span>
+                    </div>
+                </div>
+                
+                <div id="news-container" class="row" style="display: none;">
+                    <!-- Las noticias se cargarán aquí mediante JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Calendario Económico</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary" id="prev-week">Semana anterior</button>
+                    <button class="btn btn-sm btn-primary" id="current-week">Semana actual</button>
+                    <button class="btn btn-sm btn-outline-primary" id="next-week">Próxima semana</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="calendar-loading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando calendario...</span>
+                    </div>
+                </div>
+                
+                <div id="calendar-container" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha/Hora</th>
+                                    <th>País</th>
+                                    <th>Evento</th>
+                                    <th>Impacto</th>
+                                    <th>Actual</th>
+                                    <th>Estimado</th>
+                                    <th>Anterior</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calendar-events">
+                                <!-- Los eventos económicos se cargarán aquí mediante JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Referencias a elementos DOM
+    const newsFilter = document.getElementById('news-filter');
+    const newsLoading = document.getElementById('news-loading');
+    const newsContainer = document.getElementById('news-container');
+    const calendarLoading = document.getElementById('calendar-loading');
+    const calendarContainer = document.getElementById('calendar-container');
+    const calendarEvents = document.getElementById('calendar-events');
+    
+    // Cargar noticias desde la API
+    async function loadNews(category = 'all') {
+        newsLoading.style.display = 'block';
+        newsContainer.style.display = 'none';
+        
+        try {
+            const response = await fetch(`/api/v1/news?category=${category}`);
+            const data = await response.json();
+            
+            // Limpiar contenedor
+            newsContainer.innerHTML = '';
+            
+            if (data && data.length > 0) {
+                // Crear tarjetas de noticias
+                data.forEach(news => {
+                    const date = new Date(news.time_published);
+                    const formattedDate = date.toLocaleDateString('es-ES', { 
+                        day: '2-digit', 
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    const newsCard = document.createElement('div');
+                    newsCard.className = 'col-md-6 mb-4';
+                    
+                    newsCard.innerHTML = `
+                        <div class="card h-100 bg-dark">
+                            <div class="card-header d-flex justify-content-between">
+                                <span>${news.source || 'Fuente desconocida'}</span>
+                                <span class="badge bg-secondary">${formattedDate}</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${news.title}</h5>
+                                <p class="card-text">${news.summary}</p>
+                                ${news.url ? `<a href="${news.url}" target="_blank" class="btn btn-sm btn-outline-primary">Leer más</a>` : ''}
+                            </div>
+                            <div class="card-footer text-muted">
+                                ${news.topics ? news.topics.map(topic => `<span class="badge bg-info me-1">${topic}</span>`).join('') : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    newsContainer.appendChild(newsCard);
+                });
+            } else {
+                newsContainer.innerHTML = `
+                    <div class="col-12 text-center">
+                        <p>No hay noticias disponibles para esta categoría.</p>
+                    </div>
+                `;
+            }
+            
+            // Mostrar el contenedor de noticias
+            newsLoading.style.display = 'none';
+            newsContainer.style.display = 'flex';
+            
+        } catch (error) {
+            console.error('Error al cargar noticias:', error);
+            newsContainer.innerHTML = `
+                <div class="col-12 text-center text-danger">
+                    <p>Error al cargar las noticias. Por favor, intente de nuevo más tarde.</p>
+                </div>
+            `;
+            newsLoading.style.display = 'none';
+            newsContainer.style.display = 'flex';
+        }
+    }
+    
+    // Cargar eventos del calendario económico
+    async function loadCalendar(weekOffset = 0) {
+        calendarLoading.style.display = 'block';
+        calendarContainer.style.display = 'none';
+        
+        try {
+            const response = await fetch(`/api/v1/calendar?week_offset=${weekOffset}`);
+            const data = await response.json();
+            
+            // Limpiar contenedor
+            calendarEvents.innerHTML = '';
+            
+            if (data && data.length > 0) {
+                // Crear filas de eventos
+                data.forEach(event => {
+                    const date = new Date(event.time);
+                    const formattedDate = date.toLocaleDateString('es-ES', { 
+                        weekday: 'short',
+                        day: '2-digit', 
+                        month: 'short',
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    // Determinar clase de impacto
+                    let impactClass = '';
+                    switch(event.impact) {
+                        case 'high':
+                            impactClass = 'text-danger';
+                            break;
+                        case 'medium':
+                            impactClass = 'text-warning';
+                            break;
+                        case 'low':
+                            impactClass = 'text-info';
+                            break;
+                    }
+                    
+                    // Crear fila de evento
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>
+                            <span class="flag-icon flag-icon-${event.country_code.toLowerCase()}"></span>
+                            ${event.country}
+                        </td>
+                        <td>${event.event}</td>
+                        <td class="${impactClass}">
+                            ${event.impact === 'high' ? '🔴🔴🔴' : event.impact === 'medium' ? '🟡🟡' : '🔵'}
+                        </td>
+                        <td>${event.actual || '-'}</td>
+                        <td>${event.forecast || '-'}</td>
+                        <td>${event.previous || '-'}</td>
+                    `;
+                    
+                    calendarEvents.appendChild(row);
+                });
+            } else {
+                calendarEvents.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">No hay eventos económicos programados para este período.</td>
+                    </tr>
+                `;
+            }
+            
+            // Mostrar el contenedor del calendario
+            calendarLoading.style.display = 'none';
+            calendarContainer.style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error al cargar el calendario:', error);
+            calendarEvents.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger">Error al cargar el calendario económico. Por favor, intente de nuevo más tarde.</td>
+                </tr>
+            `;
+            calendarLoading.style.display = 'none';
+            calendarContainer.style.display = 'block';
+        }
+    }
+    
+    // Event listeners
+    newsFilter.addEventListener('change', function() {
+        loadNews(this.value);
+    });
+    
+    document.getElementById('prev-week').addEventListener('click', function() {
+        loadCalendar(-1);
+    });
+    
+    document.getElementById('current-week').addEventListener('click', function() {
+        loadCalendar(0);
+    });
+    
+    document.getElementById('next-week').addEventListener('click', function() {
+        loadCalendar(1);
+    });
+    
+    // Inicialización
+    loadNews();
+    loadCalendar();
+});
+</script>
+{% endblock %}

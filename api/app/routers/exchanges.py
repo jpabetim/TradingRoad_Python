@@ -2,7 +2,7 @@
 Router para información de exchanges y pares disponibles
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Path
 from typing import List, Dict, Any
 
 # Importar utilidades
@@ -29,7 +29,7 @@ async def get_exchanges():
 
 @router.get("/exchanges/{exchange_id}/pairs", response_model=Dict[str, Any])
 async def get_exchange_pairs(
-    exchange_id: str = Query(..., description="ID del exchange (ej: binance, bybit, etc)")
+    exchange_id: str = Path(..., description="ID del exchange (ej: binance, bybit, etc)")
 ):
     """
     Obtiene los pares de trading disponibles para un exchange específico
@@ -58,7 +58,7 @@ async def get_exchange_pairs(
 
 @router.get("/exchanges/{exchange_id}/info", response_model=Dict[str, Any])
 async def get_exchange_info(
-    exchange_id: str = Query(..., description="ID del exchange (ej: binance, bybit, etc)")
+    exchange_id: str = Path(..., description="ID del exchange (ej: binance, bybit, etc)")
 ):
     """
     Obtiene información general sobre un exchange específico
