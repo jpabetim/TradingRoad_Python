@@ -119,6 +119,12 @@ def get_db():
     finally:
         db.close()
 
+# Redirección para rutas incorrectas que no incluyen el prefijo /api/
+@app.get("/v1/auth/{path:path}")
+async def redirect_v1_auth(path: str):
+    # Redireccionar todas las rutas /v1/auth/* a /api/v1/auth/*
+    return RedirectResponse(url=f"/api/v1/auth/{path}", status_code=301)
+
 # Incluir router centralizado de API
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
