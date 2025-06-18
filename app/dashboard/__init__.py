@@ -118,3 +118,8 @@ def create_navbar():
         dark=True,
         className="mb-4"
     )
+
+# Crear e instanciar la aplicación Dash para que Gunicorn la encuentre
+# Asumimos que se sirve en la raíz, por lo que routes_pathname_prefix es '/'
+app = create_dash_app(routes_pathname_prefix='/')
+server = app.server
