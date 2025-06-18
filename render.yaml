@@ -1,7 +1,7 @@
 services:
   # A Docker web service
   - type: web
-    name: tradingroad-python
+    name: web
     env: python
     region: frankfurt  # Región de Render cercana a España
     buildCommand: "pip install -r requirements.txt"

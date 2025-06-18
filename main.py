@@ -16,7 +16,8 @@ import os
 # Importar API
 import sys
 # Añadir la ruta del proyecto al path para poder importar correctamente
-sys.path.insert(0, '/Users/jparedes/AppTrading/TradingRoad_Python')
+base_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, base_dir)
 
 # Crear una API independiente para las rutas de API
 from fastapi import FastAPI
@@ -29,12 +30,14 @@ api_app = FastAPI(
 
 # Importamos directamente los routers
 from api.app.routers import klines, indicators, exchanges, news
+from api.app.routers.auth import router as auth_router
 
 # Incluir los routers en la API
 api_app.include_router(klines.router, prefix="/v1", tags=["klines"])
 api_app.include_router(indicators.router, prefix="/v1", tags=["indicators"])
 api_app.include_router(exchanges.router, prefix="/v1", tags=["exchanges"])
 api_app.include_router(news.router, prefix="/v1", tags=["news"])
+api_app.include_router(auth_router, prefix="/v1/auth", tags=["auth"])
 
 # Configurar la aplicación principal
 app = FastAPI(
@@ -42,6 +45,11 @@ app = FastAPI(
     description="Plataforma avanzada de trading con análisis en tiempo real",
     version="1.0.0"
 )
+
+# Configurar logger para depurar problemas
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("main")
 
 # Configurar CORS para permitir peticiones desde el frontend
 app.add_middleware(
@@ -52,8 +60,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Montar la API como subapp
+# Montar la API como una aplicación dentro de la principal
 app.mount("/api", api_app)
+
+# Redireccionar rutas /v1/* a /api/v1/*
+@app.get("/v1/{rest_of_path:path}")
+async def redirect_v1(rest_of_path: str):
+    logger.info(f"Redirigiendo ruta incorrecta /v1/{rest_of_path} a /api/v1/{rest_of_path}")
+    return RedirectResponse(url=f"/api/v1/{rest_of_path}", status_code=301)
 
 # Configurar archivos estáticos
 app.mount("/static", StaticFiles(directory="static"), name="static")
