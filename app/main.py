@@ -120,10 +120,11 @@ def get_db():
         db.close()
 
 # Redirección para rutas incorrectas que no incluyen el prefijo /api/
-@app.get("/v1/auth/{path:path}")
-async def redirect_v1_auth(path: str):
-    # Redireccionar todas las rutas /v1/auth/* a /api/v1/auth/*
-    return RedirectResponse(url=f"/api/v1/auth/{path}", status_code=301)
+@app.get("/v1/{rest_of_path:path}")
+async def redirect_v1(rest_of_path: str):
+    # Redireccionar todas las rutas /v1/* a /api/v1/*
+    logger_main.warning(f"MAIN.PY: Redirigiendo ruta incorrecta /v1/{rest_of_path} a /api/v1/{rest_of_path}")
+    return RedirectResponse(url=f"/api/v1/{rest_of_path}", status_code=301)
 
 # Incluir router centralizado de API
 app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -132,6 +133,23 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 @app.get("/", tags=["root"])
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "title": settings.PROJECT_NAME})
+
+# Middleware para logging de solicitudes HTTP
+@app.middleware("http")
+async def log_requests_middleware(request: Request, call_next):
+    # Log the request
+    path = request.url.path
+    method = request.method
+    logger_main.info(f"MAIN.PY: Request {method} {path}")
+    
+    try:
+        response = await call_next(request)
+        if response.status_code >= 400:
+            logger_main.warning(f"MAIN.PY: Response {response.status_code} for {method} {path}")
+        return response
+    except Exception as e:
+        logger_main.error(f"MAIN.PY: Error processing {method} {path}: {str(e)}")
+        raise
 
 # Middleware para proteger rutas del dashboard
 @app.middleware("http")

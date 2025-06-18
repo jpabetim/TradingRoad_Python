@@ -11,7 +11,7 @@ router = APIRouter()
 ALPHA_VANTAGE_API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY', 'demo')
 
 @router.get('/news')
-def get_news(topics: str = Query('technology'), time_from: str = Query(None)):
+def get_news(topics: str = Query('technology'), time_from: str = Query(None), limit: int = Query(10, description="Número máximo de noticias a devolver")):
     """
     Endpoint para obtener noticias y sentimiento del mercado.
     """
@@ -25,6 +25,11 @@ def get_news(topics: str = Query('technology'), time_from: str = Query(None)):
         data = response.json()
         if 'feed' not in data:
             return {'feed': []} # Devolver lista vacía si no hay noticias
+        
+        # Limitar el número de noticias si se ha especificado un límite
+        if limit and 'feed' in data:
+            data['feed'] = data['feed'][:limit]
+            
         return data
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f'Error al contactar la API de Alpha Vantage: {e}')
