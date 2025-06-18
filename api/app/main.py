@@ -8,7 +8,7 @@ import uvicorn
 import os
 
 # Importar routers
-from app.routers import klines, indicators, exchanges
+from app.routers import klines, indicators, exchanges, news
 
 app = FastAPI(
     title="TradingRoad API",
@@ -29,6 +29,7 @@ app.add_middleware(
 app.include_router(klines.router, prefix="/api/v1", tags=["klines"])
 app.include_router(indicators.router, prefix="/api/v1", tags=["indicators"])
 app.include_router(exchanges.router, prefix="/api/v1", tags=["exchanges"])
+app.include_router(news.router, prefix="/api/v1", tags=["news"])
 
 @app.get("/", tags=["root"])
 async def root():
@@ -40,7 +41,8 @@ async def root():
         "endpoints": [
             {"path": "/api/v1/klines", "description": "Datos OHLCV para gráficos de velas"},
             {"path": "/api/v1/indicators", "description": "Cálculo de indicadores técnicos"},
-            {"path": "/api/v1/exchanges", "description": "Información sobre exchanges y pares disponibles"}
+            {"path": "/api/v1/exchanges", "description": "Información sobre exchanges y pares disponibles"},
+            {"path": "/api/v1/news", "description": "Noticias"}
         ]
     }
 

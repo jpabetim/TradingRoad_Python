@@ -1,3 +1,4 @@
-# Importar solo los módulos activos de páginas
+# Importar los módulos activos de páginas
 from . import home, trading, analysis, settings
-# Ya no importamos módulos adicionales de análisis
+# Importar nuevo componente de gráficos lightweight-charts
+from . import analysis_lw_chart

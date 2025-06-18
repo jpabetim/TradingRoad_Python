@@ -275,6 +275,14 @@ def register_lw_chart_callbacks(app):
             if df is None or df.empty:
                 return {}
             
+            # Asegurarnos de que timestamp está presente como columna
+            if 'timestamp' not in df.columns and isinstance(df.index, pd.DatetimeIndex):
+                df = df.reset_index()  # Convertir el índice en una columna
+                df.rename(columns={'index': 'timestamp'}, inplace=True)
+            elif 'timestamp' not in df.columns:
+                # Si no hay índice de tiempo, crear uno
+                df['timestamp'] = pd.date_range(end=pd.Timestamp.now(), periods=len(df), freq='H')
+            
             # Preparar datos para el gráfico
             chart_data = prepare_lw_chart_data(df)
             

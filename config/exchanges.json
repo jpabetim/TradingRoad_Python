@@ -11,27 +11,16 @@
         "use_test_net": false,
         "default_pairs": ["BTC/USDT", "ETH/USDT", "XRP/USDT"]
     },
-    "ccxt": {
-        "default_exchange": "bybit",
-        "exchanges": {
-            "bybit": {
-                "api_key": "",
-                "api_secret": "",
-                "test_mode": false,
-                "default_pairs": ["BTC/USDT", "ETH/USDT"]
-            },
-            "kucoin": {
-                "api_key": "",
-                "api_secret": "",
-                "password": "",
-                "default_pairs": ["BTC/USDT", "ETH/USDT"]
-            }
-        }
+    "fmp": {
+        "api_key": "",
+        "base_url": "https://financialmodelingprep.com/api/v3",
+        "default_symbols": ["BTC-USD", "ETH-USD", "AAPL", "MSFT", "SPY"],
+        "enable_premium_data": false,
+        "preferred_exchanges": ["NASDAQ", "NYSE"]
     },
     "general": {
-        "default_exchange": "binance",
-        "default_pair": "BTC/USDT",
-        "default_timeframe": "1h",
+        "default_symbol": "BTC-USD",
+        "default_timeframe": "1hour",
         "enable_real_time_updates": true,
         "update_interval_seconds": 60,
         "simulate_data_on_error": true

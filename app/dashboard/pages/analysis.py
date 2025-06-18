@@ -76,6 +76,14 @@ def register_callbacks(app):
             if df is None or df.empty:
                 return dash.no_update
                 
+            # Asegurarnos de que timestamp está presente como columna
+            if 'timestamp' not in df.columns and isinstance(df.index, pd.DatetimeIndex):
+                df = df.reset_index()  # Convertir el índice en una columna
+                df.rename(columns={'index': 'timestamp'}, inplace=True)
+            elif 'timestamp' not in df.columns:
+                # Si no hay índice de tiempo, crear uno
+                df['timestamp'] = pd.date_range(end=pd.Timestamp.now(), periods=len(df), freq='H')
+                
             # Convertir DataFrame a lista de diccionarios para JSON
             chart_data = df.to_dict(orient='records')
             
@@ -1363,7 +1371,7 @@ layout = html.Div(children=[
                 dbc.Button(
                     [html.I(className="fas fa-robot"), " AI Analysis"],
                     id="show-ai-button",
-                    color="success",
+                    color="primary",
                     size="sm",
                     className="me-1",
                     title="Mostrar/ocultar análisis AI"
@@ -1372,8 +1380,8 @@ layout = html.Div(children=[
                 dbc.Button(
                     html.I(className="fas fa-sun"),
                     id="theme-toggle",
-                    color="light",
-                    outline=True,
+                    color="secondary",
+                    outline=False,
                     size="sm",
                     className="me-1",
                     title="Cambiar tema claro/oscuro"
@@ -1382,8 +1390,8 @@ layout = html.Div(children=[
                 dbc.Button(
                     html.I(className="fas fa-newspaper"),
                     id="news-button",
-                    color="light",
-                    outline=True,
+                    color="secondary",
+                    outline=False,
                     size="sm",
                     className="me-1",
                     title="Ver noticias"
