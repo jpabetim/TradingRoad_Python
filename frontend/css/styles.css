@@ -1,70 +1,317 @@
 /* Estilos para TradingRoad */
 
 :root {
-    --chart-bg-dark: #131722;
-    --chart-bg-light: #ffffff;
-    --text-dark: #d1d4dc;
-    --text-light: #131722;
-    --grid-dark: #363c4e;
-    --grid-light: #f0f3fa;
-    --up-color: #26a69a;
-    --down-color: #ef5350;
-    --border-dark: #2a2e39;
-    --border-light: #e0e3eb;
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --accent-color: #7952b3;
+    --accent-light: #9975d0;
+    --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    --transition-normal: all 0.3s ease;
+    --border-radius: 8px;
 }
 
 body {
+    font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+    color: #333;
+    line-height: 1.6;
     background-color: #f8f9fa;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
-/* Estilos para los contenedores de gráficos */
-#tradingChart, #rsiChart {
-    height: 100%;
+/* Landing Page Styles */
+.landing-page {
+    background: linear-gradient(135deg, #13293d, #006494);
+    color: white;
+}
+
+.header-transparent {
+    position: absolute;
     width: 100%;
-    border-radius: 4px;
-    overflow: hidden;
-    background-color: var(--chart-bg-dark);
+    z-index: 100;
 }
 
-/* Efecto hover para controles de gráfico */
-.control-hover:hover {
-    background-color: rgba(250, 250, 250, 0.1);
-    cursor: pointer;
+.hero {
+    padding: 150px 0;
+    background: url('../assets/hero-bg.jpg') center center/cover;
+    position: relative;
 }
 
-/* Indicadores para los precios y métricas */
-.price-up {
-    color: var(--up-color);
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(9, 36, 63, 0.85);
+    z-index: 1;
 }
 
-.price-down {
-    color: var(--down-color);
+.hero .container {
+    position: relative;
+    z-index: 2;
 }
 
-/* Estilos para la barra superior */
-.navbar-brand {
-    font-weight: bold;
-    letter-spacing: 1px;
-}
-
-/* Tarjetas con información */
-.card {
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    margin-bottom: 20px;
+.feature-card {
+    padding: 2rem;
     background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    height: 100%;
+    transition: var(--transition-normal);
 }
 
-.card-header {
-    background-color: rgba(0, 0, 0, 0.03);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-/* Status badge */
-#connectionStatus {
-    padding: 0.35em 0.65em;
-    transition: all 0.3s ease;
+.icon-wrapper {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: rgba(13, 110, 253, 0.1);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.cta {
+    background: linear-gradient(135deg, #0d6efd, #0d47a1);
+    color: white;
+}
+
+/* Dashboard Styles */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    transition: var(--transition-normal);
+    position: fixed;
+    height: 100vh;
+    z-index: 1000;
+}
+
+.sidebar-collapsed {
+    width: 70px;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-menu {
+    padding: 1rem 0;
+}
+
+.sidebar-menu-item {
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    transition: var(--transition-normal);
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-menu-item:hover,
+.sidebar-menu-item.active {
+    color: white;
+    background-color: rgba(255,255,255,0.1);
+}
+
+.sidebar-menu-item i {
+    margin-right: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    transition: var(--transition-normal);
+    padding: 1rem;
+}
+
+.main-content-expanded {
+    margin-left: 70px;
+}
+
+/* Componentes de UI para Dashboard */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.chart-container {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    height: 400px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.indicator-panel {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.data-card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 1.5rem;
+    transition: var(--transition-normal);
+}
+
+.data-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Modo oscuro */
+.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.dark-mode .feature-card,
+.dark-mode .data-card,
+.dark-mode .chart-container,
+.dark-mode .indicator-panel {
+    background-color: #1e1e1e;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    color: #e0e0e0;
+}
+
+.dark-mode .navbar {
+    background-color: #1a1a1a !important;
+}
+
+.dark-mode .form-control,
+.dark-mode .form-select {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+/* Estilos para Auth Pages */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f5f7fa, #e9edf2);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 450px;
+    padding: 2rem;
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+/* Trading View Chart */
+.tv-chart-container {
+    height: 500px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+/* Estado de mercado */
+.bullish {
+    color: var(--success-color);
+}
+
+.bearish {
+    color: var(--danger-color);
+}
+
+.neutral {
+    color: var(--secondary-color);
+}
+
+/* Utilidades */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .sidebar {
+        width: 70px;
+    }
+    
+    .sidebar-expanded {
+        width: 250px;
+    }
+    
+    .main-content {
+        margin-left: 70px;
+    }
+    
+    .main-content-shrunk {
+        margin-left: 250px;
+    }
+    
+    .sidebar-menu-item span {
+        display: none;
+    }
+    
+    .sidebar-expanded .sidebar-menu-item span {
+        display: inline;
+    }
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px;
+    }
+    
+    .main-content {
+        padding: 0.5rem;
+    }
 }
 
 /* Estilos para pantallas pequeñas */
@@ -81,7 +328,6 @@ body {
         margin-bottom: 20px;
     }
 }
-
 /* Animación de cargando */
 .loading {
     display: inline-block;

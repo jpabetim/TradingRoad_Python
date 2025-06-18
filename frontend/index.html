@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradingRoad - Análisis Técnico</title>
+    <title>TradingRoad - Plataforma Avanzada de Trading</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Importar TradingView Lightweight Charts -->
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<body class="landing-page">
+    <header class="header-transparent">
+        <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container">
                 <a class="navbar-brand" href="#">TradingRoad</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
+                    <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link active" href="#">Trading</a>
+                            <a class="nav-link" href="#about">Acerca de</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Análisis</a>
+                            <a class="nav-link" href="#features">Características</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Configuración</a>
+                            <a class="nav-link btn btn-outline-light px-4" href="pages/login.html">Iniciar Sesión</a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a class="nav-link btn btn-primary px-4" href="pages/register.html">Registrarse</a>
                         </li>
                     </ul>
                 </div>
@@ -34,153 +36,117 @@
         </nav>
     </header>
 
-    <div class="container-fluid mt-3">
-        <div class="row">
-            <!-- Panel de control lateral -->
-            <div class="col-md-3">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">Control de Trading</h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Exchange -->
-                        <div class="mb-3">
-                            <label for="exchangeSelect" class="form-label">Exchange</label>
-                            <select id="exchangeSelect" class="form-select">
-                                <option value="binance" selected>Binance</option>
-                                <option value="bybit">Bybit</option>
-                                <option value="kucoin">KuCoin</option>
-                            </select>
-                        </div>
-                        <!-- Par -->
-                        <div class="mb-3">
-                            <label for="symbolSelect" class="form-label">Par de Trading</label>
-                            <select id="symbolSelect" class="form-select">
-                                <option value="BTC/USDT" selected>BTC/USDT</option>
-                                <option value="ETH/USDT">ETH/USDT</option>
-                                <option value="SOL/USDT">SOL/USDT</option>
-                            </select>
-                        </div>
-                        <!-- Intervalo -->
-                        <div class="mb-3">
-                            <label for="intervalSelect" class="form-label">Intervalo</label>
-                            <select id="intervalSelect" class="form-select">
-                                <option value="1m">1 minuto</option>
-                                <option value="5m">5 minutos</option>
-                                <option value="15m">15 minutos</option>
-                                <option value="1h" selected>1 hora</option>
-                                <option value="4h">4 horas</option>
-                                <option value="1d">1 día</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+    <section class="hero">
+        <div class="container text-center">
+            <h1 class="display-3 mb-4">Análisis técnico avanzado para traders</h1>
+            <p class="lead mb-5">Maximiza tus oportunidades de inversión con análisis técnico en tiempo real, indicadores avanzados y seguimiento de mercados financieros.</p>
+            <a href="pages/dashboard.html" class="btn btn-primary btn-lg px-5 py-3">
+                <i class="fas fa-chart-line me-2"></i>Acceder al Dashboard
+            </a>
+        </div>
+    </section>
 
-                <!-- Indicadores Técnicos -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">Indicadores</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="smaCheck" checked>
-                            <label class="form-check-label" for="smaCheck">SMA (20, 50, 200)</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="bollingerCheck">
-                            <label class="form-check-label" for="bollingerCheck">Bandas de Bollinger</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="rsiCheck">
-                            <label class="form-check-label" for="rsiCheck">RSI</label>
-                        </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="volumeCheck" checked>
-                            <label class="form-check-label" for="volumeCheck">Volumen</label>
-                        </div>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="realtimeSwitch" checked>
-                            <label class="form-check-label" for="realtimeSwitch">Actualización en tiempo real</label>
-                        </div>
-                    </div>
+    <section id="about" class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2>¿Qué es TradingRoad?</h2>
+                    <p class="lead">TradingRoad es una plataforma integral de análisis técnico y seguimiento de mercados financieros diseñada para traders de todos los niveles.</p>
+                    <p>Utilizando datos en tiempo real y las mejores tecnologías del sector, TradingRoad te permite analizar criptomonedas, acciones y otros instrumentos financieros con precisión y facilidad.</p>
+                    <p>La plataforma incluye herramientas avanzadas de análisis técnico, seguimiento de volatilidad, noticias económicas y mucho más.</p>
                 </div>
-
-                <!-- Datos Actuales -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Datos Actuales</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="currentData">
-                            <!-- Estos datos se actualizarán con JavaScript -->
-                            <div class="d-flex justify-content-between mb-2">
-                                <strong>Precio:</strong>
-                                <span id="currentPrice">--</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <strong>Cambio 24h:</strong>
-                                <span id="priceChange">--</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <strong>RSI:</strong>
-                                <span id="currentRSI">--</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <strong>SMA20:</strong>
-                                <span id="currentSMA20">--</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <strong>Tendencia:</strong>
-                                <span id="currentTrend">--</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-md-6">
+                    <img src="assets/trading-dashboard.png" alt="TradingRoad Dashboard" class="img-fluid rounded shadow">
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Panel principal con gráfico -->
-            <div class="col-md-9">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0" id="chartTitle">BTC/USDT - 1h</h5>
-                        <div>
-                            <span id="connectionStatus" class="badge bg-success">Conectado</span>
+    <section id="features" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Características principales</h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="feature-card">
+                        <div class="icon-wrapper mb-3">
+                            <i class="fas fa-chart-line"></i>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <!-- Contenedor para el gráfico -->
-                        <div id="tradingChart" style="height: 400px;"></div>
-                        
-                        <!-- Contenedor para el indicador RSI -->
-                        <div id="rsiChart" style="height: 150px; margin-top: 10px; display: none;"></div>
+                        <h4>Trading</h4>
+                        <p>Gráficos interactivos con indicadores técnicos avanzados y herramientas de dibujo para análisis detallado.</p>
                     </div>
                 </div>
-
-                <!-- Panel de análisis técnico -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">Análisis Técnico</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="technicalAnalysis">
-                            <p>Cargando análisis técnico...</p>
+                <div class="col-md-3">
+                    <div class="feature-card">
+                        <div class="icon-wrapper mb-3">
+                            <i class="fas fa-search"></i>
                         </div>
+                        <h4>Análisis</h4>
+                        <p>Análisis técnico automatizado que identifica patrones y oportunidades de trading en tiempo real.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="feature-card">
+                        <div class="icon-wrapper mb-3">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h4>Volatilidad</h4>
+                        <p>Monitoreo de volatilidad y correlación entre activos para identificar oportunidades de mercado.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="feature-card">
+                        <div class="icon-wrapper mb-3">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <h4>Noticias</h4>
+                        <p>Calendario económico y noticias financieras en tiempo real con análisis de sentimiento de mercado.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <footer class="mt-5 py-3 bg-dark text-light text-center">
+    <section class="cta py-5">
+        <div class="container text-center">
+            <h2 class="mb-4">Potencia tu trading hoy mismo</h2>
+            <p class="lead mb-5">Únete a miles de traders que utilizan TradingRoad para mejorar sus decisiones de inversión.</p>
+            <div>
+                <a href="pages/register.html" class="btn btn-primary btn-lg mx-2 px-4">Crear cuenta</a>
+                <a href="pages/dashboard.html" class="btn btn-outline-primary btn-lg mx-2 px-4">Ver dashboard</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-4 bg-dark text-light">
         <div class="container">
-            <p class="mb-0">TradingRoad &copy; 2025 - Plataforma de Trading en Tiempo Real</p>
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>TradingRoad</h5>
+                    <p>Plataforma avanzada de análisis técnico y seguimiento de mercados financieros.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Enlaces rápidos</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="pages/dashboard.html">Dashboard</a></li>
+                        <li><a href="pages/login.html">Iniciar sesión</a></li>
+                        <li><a href="pages/register.html">Registrarse</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contacto</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope me-2"></i> info@tradingroad.app</li>
+                        <li><i class="fas fa-globe me-2"></i> www.tradingroad.app</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="mt-4 mb-3">
+            <p class="text-center mb-0">© 2025 TradingRoad. Todos los derechos reservados.</p>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/tradingChart.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading - TradingRoad</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <!-- TradingView Lightweight Charts -->
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="text-decoration-none text-white">
+                    <span class="fs-4 fw-bold">TradingRoad</span>
+                </a>
+                <button id="toggle-sidebar" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="sidebar-menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="trading.html" class="sidebar-menu-item active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Trading</span>
+                </a>
+                <a href="analisis.html" class="sidebar-menu-item">
+                    <i class="fas fa-search"></i>
+                    <span>Análisis</span>
+                </a>
+                <a href="volatilidad.html" class="sidebar-menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Volatilidad</span>
+                </a>
+                <a href="noticias.html" class="sidebar-menu-item">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Noticias</span>
+                </a>
+                <div class="mt-5"></div>
+                <a href="#" class="sidebar-menu-item" id="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                    <span>Modo oscuro</span>
+                </a>
+                <a href="../index.html" class="sidebar-menu-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Salir</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="dashboard-header">
+                <div>
+                    <h2>Trading</h2>
+                    <p class="text-muted">Análisis de mercados en tiempo real</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="form-check form-switch me-3">
+                        <input class="form-check-input" type="checkbox" id="realtime-toggle" checked>
+                        <label class="form-check-label" for="realtime-toggle">Tiempo real</label>
+                    </div>
+                    <span id="connection-status" class="badge bg-success me-3">
+                        <i class="fas fa-signal me-1"></i> Conectado
+                    </span>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog me-2"></i>Perfil</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="../index.html"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trading Chart Area -->
+            <div class="row">
+                <div class="col-lg-9">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0" id="chart-symbol">BTC/USDT - 1H</h5>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary" id="draw-tool">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" id="measure-tool">
+                                    <i class="fas fa-ruler"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" id="fibonacci-tool">
+                                    <i class="fas fa-project-diagram"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" id="erase-tool">
+                                    <i class="fas fa-eraser"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="trading-chart" class="tv-chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <!-- Trading Controls -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header py-3">
+                            <h5 class="mb-0">Controles</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Symbol Selector -->
+                            <div class="mb-3">
+                                <label for="exchange-select" class="form-label">Exchange</label>
+                                <select class="form-select form-select-sm" id="exchange-select">
+                                    <option value="binance" selected>Binance</option>
+                                    <option value="fmp">Financial Modeling Prep</option>
+                                    <option value="alphavantage">Alpha Vantage</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="symbol-select" class="form-label">Símbolo</label>
+                                <select class="form-select form-select-sm" id="symbol-select">
+                                    <option value="BTC/USDT" selected>BTC/USDT</option>
+                                    <option value="ETH/USDT">ETH/USDT</option>
+                                    <option value="SOL/USDT">SOL/USDT</option>
+                                    <option value="BNB/USDT">BNB/USDT</option>
+                                    <option value="ADA/USDT">ADA/USDT</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="interval-select" class="form-label">Intervalo</label>
+                                <select class="form-select form-select-sm" id="interval-select">
+                                    <option value="1m">1 minuto</option>
+                                    <option value="5m">5 minutos</option>
+                                    <option value="15m">15 minutos</option>
+                                    <option value="30m">30 minutos</option>
+                                    <option value="1h" selected>1 hora</option>
+                                    <option value="4h">4 horas</option>
+                                    <option value="1d">1 día</option>
+                                    <option value="1w">1 semana</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Indicators -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header py-3">
+                            <h5 class="mb-0">Indicadores</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2 form-check">
+                                <input type="checkbox" class="form-check-input" id="sma-check" checked>
+                                <label class="form-check-label" for="sma-check">Medias móviles (SMA)</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <input type="checkbox" class="form-check-input" id="ema-check">
+                                <label class="form-check-label" for="ema-check">Medias exponenciales (EMA)</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <input type="checkbox" class="form-check-input" id="bollinger-check">
+                                <label class="form-check-label" for="bollinger-check">Bandas de Bollinger</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <input type="checkbox" class="form-check-input" id="rsi-check">
+                                <label class="form-check-label" for="rsi-check">RSI</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <input type="checkbox" class="form-check-input" id="macd-check">
+                                <label class="form-check-label" for="macd-check">MACD</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <input type="checkbox" class="form-check-input" id="volume-check" checked>
+                                <label class="form-check-label" for="volume-check">Volumen</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Price Info -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header py-3">
+                            <h5 class="mb-0">Precio actual</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Precio:</span>
+                                <span class="fw-bold" id="current-price">67,245.30 USDT</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Cambio 24h:</span>
+                                <span class="fw-bold text-success" id="price-change">+1.86%</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Vol. 24h:</span>
+                                <span class="fw-bold" id="volume-24h">24.5B USDT</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Tendencia:</span>
+                                <span class="fw-bold text-success" id="trend">Alcista</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alert Setup -->
+                    <div class="card shadow-sm">
+                        <div class="card-header py-3">
+                            <h5 class="mb-0">Configurar alerta</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="alert-type" class="form-label">Tipo de alerta</label>
+                                <select class="form-select form-select-sm" id="alert-type">
+                                    <option value="price">Precio</option>
+                                    <option value="indicator">Indicador</option>
+                                    <option value="pattern">Patrón</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="alert-value" class="form-label">Valor</label>
+                                <input type="number" class="form-control form-control-sm" id="alert-value" placeholder="Ej: 68500">
+                            </div>
+                            <div class="mb-3">
+                                <label for="alert-condition" class="form-label">Condición</label>
+                                <select class="form-select form-select-sm" id="alert-condition">
+                                    <option value="greater">Mayor que</option>
+                                    <option value="less">Menor que</option>
+                                    <option value="crosses-up">Cruza hacia arriba</option>
+                                    <option value="crosses-down">Cruza hacia abajo</option>
+                                </select>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-primary" type="button" id="set-alert-btn">Establecer alerta</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Alerts and Signals -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Alertas activas y señales</h5>
+                            <button class="btn btn-sm btn-outline-secondary" id="clear-alerts-btn">
+                                <i class="fas fa-trash-alt me-1"></i> Limpiar
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Símbolo</th>
+                                            <th>Tipo</th>
+                                            <th>Condición</th>
+                                            <th>Valor</th>
+                                            <th>Hora creación</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="alerts-table">
+                                        <tr>
+                                            <td>BTC/USDT</td>
+                                            <td>Precio</td>
+                                            <td>Mayor que</td>
+                                            <td>68,500 USDT</td>
+                                            <td>13:01:25</td>
+                                            <td><span class="badge bg-warning text-dark">Pendiente</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>BTC/USDT</td>
+                                            <td>RSI</td>
+                                            <td>Cruza por encima</td>
+                                            <td>70</td>
+                                            <td>12:45:12</td>
+                                            <td><span class="badge bg-success">Activada</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/tradingView.js"></script>
+    <script src="../js/trading.js"></script>
+    <script>
+        // Toggle sidebar
+        document.getElementById('toggle-sidebar').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('sidebar-collapsed');
+            document.querySelector('.main-content').classList.toggle('main-content-expanded');
+        });
+        
+        // Toggle dark mode
+        let darkMode = localStorage.getItem('darkMode') === 'enabled';
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+            themeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
+        }
+        
+        themeToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.body.classList.toggle('dark-mode');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+                themeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+                themeToggle.querySelector('i').classList.replace('fa-sun', 'fa-moon');
+            }
+        });
+
+        // Inicializar gráfico de Trading - Esta función está definida en tradingView.js
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicialización que se realizará desde tradingView.js
+        });
+    </script>
+</body>
+</html>
